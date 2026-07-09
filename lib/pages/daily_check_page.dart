@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../models/trading_rule.dart';
-import '../repositories/daily_rule_check_repository.dart';
 import '../repositories/trading_rule_repository.dart';
 import 'home_page.dart';
 
@@ -14,7 +13,6 @@ class DailyCheckPage extends StatefulWidget {
 
 class _DailyCheckPageState extends State<DailyCheckPage> {
   final TradingRuleRepository _ruleRepository = TradingRuleRepository();
-  final DailyRuleCheckRepository _checkRepository = DailyRuleCheckRepository();
 
   late Future<List<TradingRule>> _rulesFuture;
   final Set<int> _confirmedRuleIds = <int>{};
@@ -30,9 +28,7 @@ class _DailyCheckPageState extends State<DailyCheckPage> {
     return _ruleRepository.getAllRules();
   }
 
-  Future<void> _confirmToday() async {
-    await _checkRepository.confirmFor(DateTime.now());
-
+  void _confirmToday() {
     if (!mounted) {
       return;
     }
@@ -61,7 +57,9 @@ class _DailyCheckPageState extends State<DailyCheckPage> {
           final requiredRules = rules.where((rule) => rule.required).toList();
           final canConfirm =
               requiredRules.isNotEmpty &&
-              requiredRules.every((rule) => _confirmedRuleIds.contains(rule.id));
+              requiredRules.every(
+                (rule) => _confirmedRuleIds.contains(rule.id),
+              );
 
           return SafeArea(
             child: Padding(
@@ -84,7 +82,8 @@ class _DailyCheckPageState extends State<DailyCheckPage> {
                         final rule = rules[index];
                         final ruleId = rule.id;
                         final checked =
-                            ruleId != null && _confirmedRuleIds.contains(ruleId);
+                            ruleId != null &&
+                            _confirmedRuleIds.contains(ruleId);
 
                         return CheckboxListTile(
                           value: checked,

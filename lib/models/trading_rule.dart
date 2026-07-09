@@ -35,4 +35,18 @@ class TradingRule {
       required: (map['required'] as int) == 1,
     );
   }
+
+  TradingRule copyWith({
+    int? id,
+    String? content,
+    int? sortOrder,
+    bool? required,
+  }) {
+    return TradingRule(
+      id: id ?? this.id,
+      content: content ?? this.content,
+      sortOrder: sortOrder ?? this.sortOrder,
+      required: required ?? this.required,
+    );
+  }
 }

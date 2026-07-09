@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'rules_manage_page.dart';
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -25,12 +27,17 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            ElevatedButton(
-              onPressed: () {
-                // 下一版本实现
-              },
+            ElevatedButton(onPressed: () {}, child: const Text("新建交易计划")),
 
-              child: const Text("新建交易计划"),
+            const SizedBox(height: 20),
+
+            OutlinedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const RulesManagePage()),
+                );
+              },
+              child: const Text("管理交易纪律"),
             ),
           ],
         ),
