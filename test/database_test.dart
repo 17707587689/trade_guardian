@@ -5,6 +5,7 @@ import 'package:trade_guardian/database/database_helper.dart';
 
 void main() {
   setUpAll(() {
+    sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   });
 
@@ -25,6 +26,8 @@ void main() {
 
     expect(tableNames.contains('trading_rules'), true);
 
-    await db.close();
+    expect(tableNames.contains('daily_rule_checks'), true);
+
+    await DatabaseHelper.instance.close();
   });
 }

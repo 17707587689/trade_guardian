@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../pages/home_page.dart';
+import '../pages/startup_page.dart';
 
 class TradeGuardianApp extends StatelessWidget {
   const TradeGuardianApp({super.key});
@@ -13,7 +13,7 @@ class TradeGuardianApp extends StatelessWidget {
 
       theme: ThemeData(colorSchemeSeed: Colors.blue, useMaterial3: true),
 
-      home: const HomePage(),
+      home: const StartupPage(),
     );
   }
 }

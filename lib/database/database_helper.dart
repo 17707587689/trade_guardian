@@ -25,7 +25,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -75,6 +75,20 @@ class DatabaseHelper {
       )
 
     ''');
+
+    await db.execute('''
+
+      CREATE TABLE daily_rule_checks (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        check_date TEXT NOT NULL UNIQUE,
+
+        confirmed_at TEXT NOT NULL
+
+      )
+
+    ''');
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -94,6 +108,31 @@ class DatabaseHelper {
       )
 
     ''');
+    }
+
+    if (oldVersion < 3) {
+      await db.execute('''
+
+      CREATE TABLE daily_rule_checks (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        check_date TEXT NOT NULL UNIQUE,
+
+        confirmed_at TEXT NOT NULL
+
+      )
+
+    ''');
+    }
+  }
+
+  Future<void> close() async {
+    final db = _database;
+
+    if (db != null) {
+      await db.close();
+      _database = null;
     }
   }
 }
