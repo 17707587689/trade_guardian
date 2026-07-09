@@ -98,7 +98,7 @@ class _TradePlanHistoryPageState extends State<TradePlanHistoryPage> {
       await file.writeAsString(csv);
       // 弹出共享对话框，优先让用户直接分享或保存文件到任意位置
       try {
-        await Share.shareFiles([outPath], text: 'TradeGuardian 执行历史导出');
+        await Share.shareXFiles([XFile(outPath)], text: 'TradeGuardian 执行历史导出');
       } catch (_) {
         // 回退到提示文件路径
         ScaffoldMessenger.of(
