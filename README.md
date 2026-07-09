@@ -1,17 +1,51 @@
-# trade_guardian
+# TradeGuardian
 
-A new Flutter project.
+TradeGuardian 是一个帮助交易者建立交易纪律、记录交易计划、复盘交易过程的 Flutter 应用。
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+# 当前版本
 
-A few resources to get you started if this is your first Flutter project:
+* v0.1.1
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# 核心数据模型
+
+## TradePlan（交易计划）
+
+TradePlan 是整个应用的核心领域模型，用于描述一份完整的交易计划。
+
+| 字段            | 类型              | 是否为空 | 说明                                      |
+| ------------- | --------------- | ---- | --------------------------------------- |
+| id            | int?            | 是    | 数据库主键。新建交易计划时为空，保存到 SQLite 后由数据库自动生成。   |
+| stockCode     | String          | 否    | 股票代码，例如：600519、000001。                  |
+| stockName     | String          | 否    | 股票名称，例如：贵州茅台、平安银行。                      |
+| buyPrice      | double          | 否    | 计划买入价格。不是实际成交价，而是交易计划中的目标买入价。           |
+| stopLossPrice | double          | 否    | 止损价格。当市场价格跌破该价格时，应按照交易纪律执行止损。           |
+| targetPrice   | double          | 否    | 止盈目标价格。当达到预期收益时，可作为卖出参考。                |
+| positionRatio | double          | 否    | 仓位比例（百分比），例如：20 表示计划使用总资金的 20% 建仓。      |
+| reason        | String          | 否    | 建仓理由，用于记录为什么制定该交易计划，例如技术形态、基本面分析、资金流向等。 |
+| status        | TradePlanStatus | 否    | 当前交易计划状态，默认值为 `draft`。                  |
+| createdAt     | DateTime        | 否    | 创建交易计划的时间。                              |
+
+---
+
+# TradePlanStatus
+
+交易计划状态使用枚举类型，避免使用字符串造成状态不一致。
+
+| 状态        | 含义                   |
+| --------- | -------------------- |
+| draft     | 草稿。交易计划已创建，但尚未开始执行。  |
+| active    | 已生效。交易计划正在执行过程中。     |
+| completed | 已完成。交易计划已结束（例如完成买卖）。 |
+| cancelled | 已取消。交易计划由于各种原因被放弃执行。 |
+
+---
+
+# 设计原则
+
+TradeGuardian 记录的是**交易计划**，而不是交易结果。
+
+一份交易计划应当在交易发生之前创建，记录买入逻辑、风险控制和资金管理策略。后续版本将在此基础上增加执行记录、交易复盘、统计分析等功能，帮助交易者建立稳定、可复盘的交易体系。
