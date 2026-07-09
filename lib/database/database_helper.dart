@@ -25,7 +25,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -53,6 +53,14 @@ class DatabaseHelper {
         reason TEXT NOT NULL,
 
         status TEXT NOT NULL,
+
+        planned_buy_date TEXT,
+        planned_buy_end_date TEXT,
+
+        executed_at TEXT,
+        executed_buy_price REAL,
+        executed_position_ratio REAL,
+        executed_matched INTEGER,
 
         created_at TEXT NOT NULL
 
@@ -124,6 +132,27 @@ class DatabaseHelper {
       )
 
     ''');
+    }
+
+    if (oldVersion < 4) {
+      await db.execute('''
+        ALTER TABLE trade_plans ADD COLUMN planned_buy_date TEXT;
+      ''');
+      await db.execute('''
+        ALTER TABLE trade_plans ADD COLUMN planned_buy_end_date TEXT;
+      ''');
+      await db.execute('''
+        ALTER TABLE trade_plans ADD COLUMN executed_at TEXT;
+      ''');
+      await db.execute('''
+        ALTER TABLE trade_plans ADD COLUMN executed_buy_price REAL;
+      ''');
+      await db.execute('''
+        ALTER TABLE trade_plans ADD COLUMN executed_position_ratio REAL;
+      ''');
+      await db.execute('''
+        ALTER TABLE trade_plans ADD COLUMN executed_matched INTEGER;
+      ''');
     }
   }
 

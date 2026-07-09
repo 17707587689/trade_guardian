@@ -17,6 +17,18 @@ class TradePlan {
 
   final String reason;
 
+  /// 计划买入：单日或开始日期
+  final DateTime? plannedBuyDate;
+
+  /// 计划买入结束日期（可选，表示区间）
+  final DateTime? plannedBuyEndDate;
+
+  /// 执行相关信息
+  final DateTime? executedAt;
+  final double? executedBuyPrice;
+  final double? executedPositionRatio;
+  final bool? executedMatched;
+
   final TradePlanStatus status;
 
   final DateTime createdAt;
@@ -40,6 +52,13 @@ class TradePlan {
 
     this.status = TradePlanStatus.draft,
 
+    this.plannedBuyDate,
+    this.plannedBuyEndDate,
+    this.executedAt,
+    this.executedBuyPrice,
+    this.executedPositionRatio,
+    this.executedMatched,
+
     required this.createdAt,
   });
 
@@ -60,8 +79,15 @@ class TradePlan {
       'position_ratio': positionRatio,
 
       'reason': reason,
-
       'status': status.name,
+
+      'planned_buy_date': plannedBuyDate?.toIso8601String(),
+      'planned_buy_end_date': plannedBuyEndDate?.toIso8601String(),
+
+      'executed_at': executedAt?.toIso8601String(),
+      'executed_buy_price': executedBuyPrice,
+      'executed_position_ratio': executedPositionRatio,
+      'executed_matched': executedMatched == true ? 1 : 0,
 
       'created_at': createdAt.toIso8601String(),
     };
@@ -91,7 +117,71 @@ class TradePlan {
         orElse: () => TradePlanStatus.draft,
       ),
 
+      plannedBuyDate: map['planned_buy_date'] != null
+          ? DateTime.parse(map['planned_buy_date'])
+          : null,
+      plannedBuyEndDate: map['planned_buy_end_date'] != null
+          ? DateTime.parse(map['planned_buy_end_date'])
+          : null,
+
+      executedAt: map['executed_at'] != null
+          ? DateTime.parse(map['executed_at'])
+          : null,
+      executedBuyPrice: map['executed_buy_price'] != null
+          ? (map['executed_buy_price'] as num).toDouble()
+          : null,
+      executedPositionRatio: map['executed_position_ratio'] != null
+          ? (map['executed_position_ratio'] as num).toDouble()
+          : null,
+      executedMatched: map['executed_matched'] != null
+          ? (map['executed_matched'] as int) == 1
+          : false,
+
       createdAt: DateTime.parse(map['created_at']),
     );
+  }
+
+  TradePlan copyWith({
+    int? id,
+    String? stockCode,
+    String? stockName,
+    double? buyPrice,
+    double? stopLossPrice,
+    double? targetPrice,
+    double? positionRatio,
+    String? reason,
+    TradePlanStatus? status,
+    DateTime? createdAt,
+    DateTime? plannedBuyDate,
+    DateTime? plannedBuyEndDate,
+    DateTime? executedAt,
+    double? executedBuyPrice,
+    double? executedPositionRatio,
+    bool? executedMatched,
+  }) {
+    return TradePlan(
+      id: id ?? this.id,
+      stockCode: stockCode ?? this.stockCode,
+      stockName: stockName ?? this.stockName,
+      buyPrice: buyPrice ?? this.buyPrice,
+      stopLossPrice: stopLossPrice ?? this.stopLossPrice,
+      targetPrice: targetPrice ?? this.targetPrice,
+      positionRatio: positionRatio ?? this.positionRatio,
+      reason: reason ?? this.reason,
+      status: status ?? this.status,
+      plannedBuyDate: plannedBuyDate ?? this.plannedBuyDate,
+      plannedBuyEndDate: plannedBuyEndDate ?? this.plannedBuyEndDate,
+      executedAt: executedAt ?? this.executedAt,
+      executedBuyPrice: executedBuyPrice ?? this.executedBuyPrice,
+      executedPositionRatio:
+          executedPositionRatio ?? this.executedPositionRatio,
+      executedMatched: executedMatched ?? this.executedMatched,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'TradePlan{id: $id, stockCode: $stockCode, stockName: $stockName, buyPrice: $buyPrice, stopLossPrice: $stopLossPrice, targetPrice: $targetPrice, positionRatio: $positionRatio, reason: $reason, plannedBuyDate: $plannedBuyDate, plannedBuyEndDate: $plannedBuyEndDate, executedAt: $executedAt, executedBuyPrice: $executedBuyPrice, executedPositionRatio: $executedPositionRatio, executedMatched: $executedMatched, status: ${status.name}, createdAt: ${createdAt.toIso8601String()}}';
   }
 }
