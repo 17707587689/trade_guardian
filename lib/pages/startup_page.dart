@@ -15,12 +15,13 @@ class StartupPage extends StatefulWidget {
 class _StartupPageState extends State<StartupPage> {
   final DailyRuleCheckRepository _checkRepository = DailyRuleCheckRepository();
 
-  late final Future<bool> _confirmedTodayFuture;
-
   @override
   void initState() {
     super.initState();
-    _confirmedTodayFuture = _checkRepository.isConfirmedFor(DateTime.now());
+    // Always show the daily check dialog on each app startup/login
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showDailyCheckDialog();
+    });
   }
 
   Future<void> _showDailyCheckDialog() async {
@@ -43,26 +44,9 @@ class _StartupPageState extends State<StartupPage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: _confirmedTodayFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        if (snapshot.data ?? false) {
-          return const HomePage();
-        }
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _showDailyCheckDialog();
-        });
-
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
-      },
-    );
+    // Show a loading scaffold while the dialog is shown; after confirmation
+    // the dialog will navigate to HomePage.
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
 

@@ -62,7 +62,7 @@ class _RulesManagePageState extends State<RulesManagePage> {
           TradingRule(content: content, sortOrder: maxOrder + 1),
         );
       } else {
-        await _repository.updateRule(rule!.copyWith(content: content));
+        await _repository.updateRule(rule.copyWith(content: content));
       }
       setState(() {
         _loadRules();
@@ -147,15 +147,35 @@ class _RulesManagePageState extends State<RulesManagePage> {
               final rule = rules[index];
               return ListTile(
                 key: ValueKey(rule.id),
-                title: Text(rule.content),
+                title: Row(
+                  children: [
+                    Text(
+                      '${index + 1}. ',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Expanded(child: Text(rule.content)),
+                  ],
+                ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
+                      iconSize: 18,
+                      padding: const EdgeInsets.all(6),
+                      constraints: const BoxConstraints.tightFor(
+                        width: 36,
+                        height: 36,
+                      ),
                       icon: const Icon(Icons.edit),
                       onPressed: () => _showRuleDialog(rule: rule),
                     ),
                     IconButton(
+                      iconSize: 18,
+                      padding: const EdgeInsets.all(6),
+                      constraints: const BoxConstraints.tightFor(
+                        width: 36,
+                        height: 36,
+                      ),
                       icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () => _deleteRule(rule),
                     ),

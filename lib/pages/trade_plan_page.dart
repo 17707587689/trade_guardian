@@ -30,6 +30,7 @@ class _TradePlanPageState extends State<TradePlanPage> {
   late TextEditingController _executedBuyPriceCtrl;
   late TextEditingController _executedPositionRatioCtrl;
   bool _executedMatched = false;
+  late TextEditingController _executedReturnRateCtrl;
 
   TradePlanStatus _status = TradePlanStatus.draft;
 
@@ -61,6 +62,9 @@ class _TradePlanPageState extends State<TradePlanPage> {
     _executedPositionRatioCtrl = TextEditingController(
       text: p?.executedPositionRatio?.toString() ?? '',
     );
+    _executedReturnRateCtrl = TextEditingController(
+      text: p?.executedReturnRate?.toString() ?? '',
+    );
     _executedMatched = p?.executedMatched ?? false;
     _status = p?.status ?? TradePlanStatus.draft;
   }
@@ -76,6 +80,7 @@ class _TradePlanPageState extends State<TradePlanPage> {
     _reasonCtrl.dispose();
     _executedBuyPriceCtrl.dispose();
     _executedPositionRatioCtrl.dispose();
+    _executedReturnRateCtrl.dispose();
     super.dispose();
   }
 
@@ -88,6 +93,7 @@ class _TradePlanPageState extends State<TradePlanPage> {
     final ratio = double.tryParse(_positionRatioCtrl.text) ?? 0;
     final executedBuyPrice = double.tryParse(_executedBuyPriceCtrl.text);
     final executedPosRatio = double.tryParse(_executedPositionRatioCtrl.text);
+    final executedReturnRate = double.tryParse(_executedReturnRateCtrl.text);
 
     final now = DateTime.now();
 
@@ -117,6 +123,7 @@ class _TradePlanPageState extends State<TradePlanPage> {
               executedAt: _executedAt,
               executedBuyPrice: executedBuyPrice,
               executedPositionRatio: executedPosRatio,
+              executedReturnRate: executedReturnRate,
               executedMatched: _executedMatched,
               createdAt: widget.plan?.createdAt ?? now,
             );
@@ -146,8 +153,12 @@ class _TradePlanPageState extends State<TradePlanPage> {
     switch (s) {
       case TradePlanStatus.draft:
         return '草稿';
-      case TradePlanStatus.active:
-        return '进行中';
+      case TradePlanStatus.pendingeffective:
+        return '待生效';
+      case TradePlanStatus.executing:
+        return '执行中';
+      case TradePlanStatus.effective:
+        return '生效中';
       case TradePlanStatus.completed:
         return '已完成';
       case TradePlanStatus.cancelled:
@@ -228,8 +239,9 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   final err = _numberValidator(v);
                   if (err != null) return err;
                   final val = double.tryParse(v!);
-                  if (val == null || val < 0 || val > 1)
+                  if (val == null || val < 0 || val > 1) {
                     return '请输入 0 到 1 之间的数';
+                  }
                   return null;
                 },
               ),
@@ -346,6 +358,14 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   ),
                 ],
               ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _executedReturnRateCtrl,
+                decoration: const InputDecoration(
+                  labelText: '收益率（可选，示例：0.12 表示 12%）',
+                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+              ),
               CheckboxListTile(
                 value: _executedMatched,
                 onChanged: (v) => setState(() => _executedMatched = v ?? false),
@@ -355,7 +375,7 @@ class _TradePlanPageState extends State<TradePlanPage> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<TradePlanStatus>(
-                value: _status,
+                initialValue: _status,
                 decoration: const InputDecoration(labelText: '状态'),
                 items: TradePlanStatus.values
                     .map(

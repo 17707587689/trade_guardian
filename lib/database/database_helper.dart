@@ -25,7 +25,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -152,6 +152,11 @@ class DatabaseHelper {
       ''');
       await db.execute('''
         ALTER TABLE trade_plans ADD COLUMN executed_matched INTEGER;
+      ''');
+    }
+    if (oldVersion < 5) {
+      await db.execute('''
+        ALTER TABLE trade_plans ADD COLUMN executed_return_rate REAL;
       ''');
     }
   }

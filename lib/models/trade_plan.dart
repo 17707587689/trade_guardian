@@ -1,4 +1,11 @@
-enum TradePlanStatus { draft, active, completed, cancelled }
+enum TradePlanStatus {
+  draft,
+  pendingeffective,
+  executing,
+  effective,
+  completed,
+  cancelled,
+}
 
 class TradePlan {
   final int? id;
@@ -28,6 +35,7 @@ class TradePlan {
   final double? executedBuyPrice;
   final double? executedPositionRatio;
   final bool? executedMatched;
+  final double? executedReturnRate;
 
   final TradePlanStatus status;
 
@@ -58,6 +66,7 @@ class TradePlan {
     this.executedBuyPrice,
     this.executedPositionRatio,
     this.executedMatched,
+    this.executedReturnRate,
 
     required this.createdAt,
   });
@@ -88,6 +97,7 @@ class TradePlan {
       'executed_buy_price': executedBuyPrice,
       'executed_position_ratio': executedPositionRatio,
       'executed_matched': executedMatched == true ? 1 : 0,
+      'executed_return_rate': executedReturnRate,
 
       'created_at': createdAt.toIso8601String(),
     };
@@ -136,6 +146,9 @@ class TradePlan {
       executedMatched: map['executed_matched'] != null
           ? (map['executed_matched'] as int) == 1
           : false,
+      executedReturnRate: map['executed_return_rate'] != null
+          ? (map['executed_return_rate'] as num).toDouble()
+          : null,
 
       createdAt: DateTime.parse(map['created_at']),
     );
@@ -158,6 +171,7 @@ class TradePlan {
     double? executedBuyPrice,
     double? executedPositionRatio,
     bool? executedMatched,
+    double? executedReturnRate,
   }) {
     return TradePlan(
       id: id ?? this.id,
@@ -176,12 +190,13 @@ class TradePlan {
       executedPositionRatio:
           executedPositionRatio ?? this.executedPositionRatio,
       executedMatched: executedMatched ?? this.executedMatched,
+      executedReturnRate: executedReturnRate ?? this.executedReturnRate,
       createdAt: createdAt ?? this.createdAt,
     );
   }
 
   @override
   String toString() {
-    return 'TradePlan{id: $id, stockCode: $stockCode, stockName: $stockName, buyPrice: $buyPrice, stopLossPrice: $stopLossPrice, targetPrice: $targetPrice, positionRatio: $positionRatio, reason: $reason, plannedBuyDate: $plannedBuyDate, plannedBuyEndDate: $plannedBuyEndDate, executedAt: $executedAt, executedBuyPrice: $executedBuyPrice, executedPositionRatio: $executedPositionRatio, executedMatched: $executedMatched, status: ${status.name}, createdAt: ${createdAt.toIso8601String()}}';
+    return 'TradePlan{id: $id, stockCode: $stockCode, stockName: $stockName, buyPrice: $buyPrice, stopLossPrice: $stopLossPrice, targetPrice: $targetPrice, positionRatio: $positionRatio, reason: $reason, plannedBuyDate: $plannedBuyDate, plannedBuyEndDate: $plannedBuyEndDate, executedAt: $executedAt, executedBuyPrice: $executedBuyPrice, executedPositionRatio: $executedPositionRatio, executedMatched: $executedMatched, executedReturnRate: $executedReturnRate, status: ${status.name}, createdAt: ${createdAt.toIso8601String()}}';
   }
 }

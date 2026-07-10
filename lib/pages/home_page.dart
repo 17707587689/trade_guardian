@@ -20,8 +20,12 @@ class _HomePageState extends State<HomePage> {
     switch (s) {
       case TradePlanStatus.draft:
         return '草稿';
-      case TradePlanStatus.active:
-        return '进行中';
+      case TradePlanStatus.pendingeffective:
+        return '待生效';
+      case TradePlanStatus.effective:
+        return '生效中';
+      case TradePlanStatus.executing:
+        return '执行中';
       case TradePlanStatus.completed:
         return '已完成';
       case TradePlanStatus.cancelled:
@@ -75,12 +79,16 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  '交易纪律守护',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                const Center(
+                  child: Text(
+                    '交易守护天使',
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 const SizedBox(height: 8),
-                const Text('记录计划，而不是预测市场', style: TextStyle(fontSize: 16)),
+                const Center(
+                  child: Text('守护交易，杜绝一切冲动交易', style: TextStyle(fontSize: 16)),
+                ),
                 const SizedBox(height: 12),
 
                 Expanded(
@@ -88,7 +96,7 @@ class _HomePageState extends State<HomePage> {
                       ? const Center(child: Text('暂无交易计划'))
                       : ListView.separated(
                           itemCount: plans.length,
-                          separatorBuilder: (_, __) => const Divider(),
+                          separatorBuilder: (_, _) => const Divider(),
                           itemBuilder: (context, index) {
                             final p = plans[index];
                             final plannedLabel = p.plannedBuyDate != null
