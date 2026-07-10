@@ -25,7 +25,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -59,6 +59,8 @@ class DatabaseHelper {
 
         executed_at TEXT,
         executed_buy_price REAL,
+        executed_sell_price REAL,
+        executed_sell_date TEXT,
         executed_position_ratio REAL,
         executed_matched INTEGER,
 
@@ -157,6 +159,14 @@ class DatabaseHelper {
     if (oldVersion < 5) {
       await db.execute('''
         ALTER TABLE trade_plans ADD COLUMN executed_return_rate REAL;
+      ''');
+    }
+    if (oldVersion < 6) {
+      await db.execute('''
+        ALTER TABLE trade_plans ADD COLUMN executed_sell_price REAL;
+      ''');
+      await db.execute('''
+        ALTER TABLE trade_plans ADD COLUMN executed_sell_date TEXT;
       ''');
     }
   }

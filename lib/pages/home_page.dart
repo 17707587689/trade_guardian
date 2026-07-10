@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/trade_plan.dart';
 import '../repositories/trade_plan_repository.dart';
@@ -61,6 +64,50 @@ class _HomePageState extends State<HomePage> {
     _loadPlans();
   }
 
+  Future<void> _openEastMoneyApp() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('交易纪律确认'),
+          content: const Text('请先确认遵守交易纪律，再进入东方财富应用。'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('取消'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('确认进入'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    if (!Platform.isAndroid) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('当前平台不支持直接打开东方财富应用。')));
+      return;
+    }
+
+    final androidIntent = Uri.parse(
+      'intent://#Intent;package=com.eastmoney.android.berlin;end',
+    );
+    final launched = await launchUrl(androidIntent);
+
+    if (!launched) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('打开东方财富失败，请确认已安装该应用。')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,6 +135,15 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 8),
                 const Center(
                   child: Text('守护交易，杜绝一切冲动交易', style: TextStyle(fontSize: 16)),
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: _openEastMoneyApp,
+                  icon: const Icon(Icons.open_in_new),
+                  label: const Text('东方财富'),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(48),
+                  ),
                 ),
                 const SizedBox(height: 12),
 

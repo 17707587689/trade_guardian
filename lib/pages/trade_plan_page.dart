@@ -27,10 +27,11 @@ class _TradePlanPageState extends State<TradePlanPage> {
   DateTime? _plannedBuyEndDate;
 
   DateTime? _executedAt;
+  DateTime? _executedSellDate;
   late TextEditingController _executedBuyPriceCtrl;
+  late TextEditingController _executedSellPriceCtrl;
   late TextEditingController _executedPositionRatioCtrl;
   bool _executedMatched = false;
-  late TextEditingController _executedReturnRateCtrl;
 
   TradePlanStatus _status = TradePlanStatus.draft;
 
@@ -56,14 +57,15 @@ class _TradePlanPageState extends State<TradePlanPage> {
     _plannedBuyEndDate = p?.plannedBuyEndDate;
 
     _executedAt = p?.executedAt;
+    _executedSellDate = p?.executedSellDate;
     _executedBuyPriceCtrl = TextEditingController(
       text: p?.executedBuyPrice?.toString() ?? '',
     );
+    _executedSellPriceCtrl = TextEditingController(
+      text: p?.executedSellPrice?.toString() ?? '',
+    );
     _executedPositionRatioCtrl = TextEditingController(
       text: p?.executedPositionRatio?.toString() ?? '',
-    );
-    _executedReturnRateCtrl = TextEditingController(
-      text: p?.executedReturnRate?.toString() ?? '',
     );
     _executedMatched = p?.executedMatched ?? false;
     _status = p?.status ?? TradePlanStatus.draft;
@@ -79,8 +81,8 @@ class _TradePlanPageState extends State<TradePlanPage> {
     _positionRatioCtrl.dispose();
     _reasonCtrl.dispose();
     _executedBuyPriceCtrl.dispose();
+    _executedSellPriceCtrl.dispose();
     _executedPositionRatioCtrl.dispose();
-    _executedReturnRateCtrl.dispose();
     super.dispose();
   }
 
@@ -92,8 +94,14 @@ class _TradePlanPageState extends State<TradePlanPage> {
     final target = double.tryParse(_targetPriceCtrl.text) ?? 0;
     final ratio = double.tryParse(_positionRatioCtrl.text) ?? 0;
     final executedBuyPrice = double.tryParse(_executedBuyPriceCtrl.text);
+    final executedSellPrice = double.tryParse(_executedSellPriceCtrl.text);
     final executedPosRatio = double.tryParse(_executedPositionRatioCtrl.text);
-    final executedReturnRate = double.tryParse(_executedReturnRateCtrl.text);
+    final executedReturnRate =
+        (executedBuyPrice != null &&
+            executedSellPrice != null &&
+            executedBuyPrice != 0)
+        ? (executedSellPrice - executedBuyPrice) / executedBuyPrice
+        : null;
 
     final now = DateTime.now();
 
@@ -122,6 +130,8 @@ class _TradePlanPageState extends State<TradePlanPage> {
               plannedBuyEndDate: _plannedBuyEndDate,
               executedAt: _executedAt,
               executedBuyPrice: executedBuyPrice,
+              executedSellPrice: executedSellPrice,
+              executedSellDate: _executedSellDate,
               executedPositionRatio: executedPosRatio,
               executedReturnRate: executedReturnRate,
               executedMatched: _executedMatched,
@@ -136,6 +146,18 @@ class _TradePlanPageState extends State<TradePlanPage> {
 
     if (!mounted) return;
     Navigator.of(context).pop(true);
+  }
+
+  String _calculateReturnRateText() {
+    final executedBuyPrice = double.tryParse(_executedBuyPriceCtrl.text);
+    final executedSellPrice = double.tryParse(_executedSellPriceCtrl.text);
+    if (executedBuyPrice == null ||
+        executedSellPrice == null ||
+        executedBuyPrice == 0) {
+      return '-';
+    }
+    final rate = (executedSellPrice - executedBuyPrice) / executedBuyPrice;
+    return rate.toStringAsFixed(4);
   }
 
   String? _requiredValidator(String? v) {
@@ -186,16 +208,24 @@ class _TradePlanPageState extends State<TradePlanPage> {
           key: _formKey,
           child: ListView(
             children: [
-              TextFormField(
-                controller: _stockCodeCtrl,
-                decoration: const InputDecoration(labelText: '股票代码'),
-                validator: _requiredValidator,
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _stockNameCtrl,
-                decoration: const InputDecoration(labelText: '股票名称'),
-                validator: _requiredValidator,
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _stockCodeCtrl,
+                      decoration: const InputDecoration(labelText: '股票代码'),
+                      validator: _requiredValidator,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _stockNameCtrl,
+                      decoration: const InputDecoration(labelText: '股票名称'),
+                      validator: _requiredValidator,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Row(
@@ -224,26 +254,40 @@ class _TradePlanPageState extends State<TradePlanPage> {
                 ],
               ),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _targetPriceCtrl,
-                decoration: const InputDecoration(labelText: '目标价格'),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                validator: _numberValidator,
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _positionRatioCtrl,
-                decoration: const InputDecoration(labelText: '仓位比例 (0-1)'),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                validator: (v) {
-                  final err = _numberValidator(v);
-                  if (err != null) return err;
-                  final val = double.tryParse(v!);
-                  if (val == null || val < 0 || val > 1) {
-                    return '请输入 0 到 1 之间的数';
-                  }
-                  return null;
-                },
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _targetPriceCtrl,
+                      decoration: const InputDecoration(labelText: '目标价格'),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: _numberValidator,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _positionRatioCtrl,
+                      decoration: const InputDecoration(
+                        labelText: '仓位比例 (0-1)',
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: (v) {
+                        final err = _numberValidator(v);
+                        if (err != null) return err;
+                        final val = double.tryParse(v!);
+                        if (val == null || val < 0 || val > 1) {
+                          return '请输入 0 到 1 之间的数';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -313,24 +357,58 @@ class _TradePlanPageState extends State<TradePlanPage> {
               const SizedBox(height: 12),
               const Text('执行信息', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              InkWell(
-                onTap: () async {
-                  final d = await showDatePicker(
-                    context: context,
-                    initialDate: _executedAt ?? DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                  );
-                  if (d != null) setState(() => _executedAt = d);
-                },
-                child: InputDecorator(
-                  decoration: const InputDecoration(labelText: '执行日期（可选）'),
-                  child: Text(
-                    _executedAt == null
-                        ? '未设置'
-                        : _executedAt!.toLocal().toString().split(' ')[0],
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        final d = await showDatePicker(
+                          context: context,
+                          initialDate: _executedAt ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        );
+                        if (d != null) setState(() => _executedAt = d);
+                      },
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: '实际买入日期（可选）',
+                        ),
+                        child: Text(
+                          _executedAt == null
+                              ? '未设置'
+                              : _executedAt!.toLocal().toString().split(' ')[0],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        final d = await showDatePicker(
+                          context: context,
+                          initialDate: _executedSellDate ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        );
+                        if (d != null) setState(() => _executedSellDate = d);
+                      },
+                      child: InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: '实际卖出日期（可选）',
+                        ),
+                        child: Text(
+                          _executedSellDate == null
+                              ? '未设置'
+                              : _executedSellDate!.toLocal().toString().split(
+                                  ' ',
+                                )[0],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Row(
@@ -344,9 +422,27 @@ class _TradePlanPageState extends State<TradePlanPage> {
                       keyboardType: TextInputType.numberWithOptions(
                         decimal: true,
                       ),
+                      onChanged: (_) => setState(() {}),
                     ),
                   ),
                   const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _executedSellPriceCtrl,
+                      decoration: const InputDecoration(
+                        labelText: '实际卖出价格（可选）',
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
                   Expanded(
                     child: TextFormField(
                       controller: _executedPositionRatioCtrl,
@@ -356,15 +452,14 @@ class _TradePlanPageState extends State<TradePlanPage> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: InputDecorator(
+                      decoration: const InputDecoration(labelText: '收益率（自动计算）'),
+                      child: Text(_calculateReturnRateText()),
+                    ),
+                  ),
                 ],
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _executedReturnRateCtrl,
-                decoration: const InputDecoration(
-                  labelText: '收益率（可选，示例：0.12 表示 12%）',
-                ),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
               ),
               CheckboxListTile(
                 value: _executedMatched,

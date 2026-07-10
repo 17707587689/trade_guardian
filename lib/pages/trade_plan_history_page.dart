@@ -49,7 +49,10 @@ class _TradePlanHistoryPageState extends State<TradePlanHistoryPage> {
       'planned_buy_date',
       'executed_at',
       'executed_buy_price',
+      'executed_sell_date',
+      'executed_sell_price',
       'executed_position_ratio',
+      'executed_return_rate',
       'executed_matched',
       'reason',
     ];
@@ -65,7 +68,10 @@ class _TradePlanHistoryPageState extends State<TradePlanHistoryPage> {
         p.plannedBuyDate?.toIso8601String() ?? '',
         p.executedAt?.toIso8601String() ?? '',
         p.executedBuyPrice?.toString() ?? '',
+        p.executedSellDate?.toIso8601String() ?? '',
+        p.executedSellPrice?.toString() ?? '',
         p.executedPositionRatio?.toString() ?? '',
+        p.executedReturnRate?.toString() ?? '',
         (p.executedMatched == true) ? '1' : '0',
         '"${p.reason.replaceAll('"', '""')}"',
       ];
@@ -145,7 +151,10 @@ class _TradePlanHistoryPageState extends State<TradePlanHistoryPage> {
                                   '计划: ${p.plannedBuyDate?.toLocal().toString().split(' ')[0] ?? '-'}',
                                 ),
                                 Text(
-                                  '执行: ${p.executedAt?.toLocal().toString().split(' ')[0] ?? '-'}  价格: ${p.executedBuyPrice ?? '-'}  仓位: ${p.executedPositionRatio ?? '-'}',
+                                  '实际买入: ${p.executedAt?.toLocal().toString().split(' ')[0] ?? '-'}  价格: ${p.executedBuyPrice ?? '-'}  仓位: ${p.executedPositionRatio ?? '-'}',
+                                ),
+                                Text(
+                                  '实际卖出: ${p.executedSellDate?.toLocal().toString().split(' ')[0] ?? '-'}  价格: ${p.executedSellPrice ?? '-'}  收益率: ${p.executedReturnRate?.toStringAsFixed(4) ?? '-'}',
                                 ),
                                 Text(
                                   '是否与计划一致: ${p.executedMatched == true ? '是' : '否'}',

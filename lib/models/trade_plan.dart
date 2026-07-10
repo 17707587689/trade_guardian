@@ -33,6 +33,8 @@ class TradePlan {
   /// 执行相关信息
   final DateTime? executedAt;
   final double? executedBuyPrice;
+  final double? executedSellPrice;
+  final DateTime? executedSellDate;
   final double? executedPositionRatio;
   final bool? executedMatched;
   final double? executedReturnRate;
@@ -64,6 +66,8 @@ class TradePlan {
     this.plannedBuyEndDate,
     this.executedAt,
     this.executedBuyPrice,
+    this.executedSellPrice,
+    this.executedSellDate,
     this.executedPositionRatio,
     this.executedMatched,
     this.executedReturnRate,
@@ -95,6 +99,8 @@ class TradePlan {
 
       'executed_at': executedAt?.toIso8601String(),
       'executed_buy_price': executedBuyPrice,
+      'executed_sell_price': executedSellPrice,
+      'executed_sell_date': executedSellDate?.toIso8601String(),
       'executed_position_ratio': executedPositionRatio,
       'executed_matched': executedMatched == true ? 1 : 0,
       'executed_return_rate': executedReturnRate,
@@ -140,6 +146,12 @@ class TradePlan {
       executedBuyPrice: map['executed_buy_price'] != null
           ? (map['executed_buy_price'] as num).toDouble()
           : null,
+      executedSellPrice: map['executed_sell_price'] != null
+          ? (map['executed_sell_price'] as num).toDouble()
+          : null,
+      executedSellDate: map['executed_sell_date'] != null
+          ? DateTime.parse(map['executed_sell_date'])
+          : null,
       executedPositionRatio: map['executed_position_ratio'] != null
           ? (map['executed_position_ratio'] as num).toDouble()
           : null,
@@ -169,6 +181,8 @@ class TradePlan {
     DateTime? plannedBuyEndDate,
     DateTime? executedAt,
     double? executedBuyPrice,
+    double? executedSellPrice,
+    DateTime? executedSellDate,
     double? executedPositionRatio,
     bool? executedMatched,
     double? executedReturnRate,
@@ -187,6 +201,8 @@ class TradePlan {
       plannedBuyEndDate: plannedBuyEndDate ?? this.plannedBuyEndDate,
       executedAt: executedAt ?? this.executedAt,
       executedBuyPrice: executedBuyPrice ?? this.executedBuyPrice,
+      executedSellPrice: executedSellPrice ?? this.executedSellPrice,
+      executedSellDate: executedSellDate ?? this.executedSellDate,
       executedPositionRatio:
           executedPositionRatio ?? this.executedPositionRatio,
       executedMatched: executedMatched ?? this.executedMatched,
@@ -197,6 +213,6 @@ class TradePlan {
 
   @override
   String toString() {
-    return 'TradePlan{id: $id, stockCode: $stockCode, stockName: $stockName, buyPrice: $buyPrice, stopLossPrice: $stopLossPrice, targetPrice: $targetPrice, positionRatio: $positionRatio, reason: $reason, plannedBuyDate: $plannedBuyDate, plannedBuyEndDate: $plannedBuyEndDate, executedAt: $executedAt, executedBuyPrice: $executedBuyPrice, executedPositionRatio: $executedPositionRatio, executedMatched: $executedMatched, executedReturnRate: $executedReturnRate, status: ${status.name}, createdAt: ${createdAt.toIso8601String()}}';
+    return 'TradePlan{id: $id, stockCode: $stockCode, stockName: $stockName, buyPrice: $buyPrice, stopLossPrice: $stopLossPrice, targetPrice: $targetPrice, positionRatio: $positionRatio, reason: $reason, plannedBuyDate: $plannedBuyDate, plannedBuyEndDate: $plannedBuyEndDate, executedAt: $executedAt, executedBuyPrice: $executedBuyPrice, executedSellPrice: $executedSellPrice, executedSellDate: $executedSellDate, executedPositionRatio: $executedPositionRatio, executedMatched: $executedMatched, executedReturnRate: $executedReturnRate, status: ${status.name}, createdAt: ${createdAt.toIso8601String()}}';
   }
 }
