@@ -31,11 +31,11 @@ class _RulesManagePageState extends State<RulesManagePage> {
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(isNew ? '新增纪律' : '修改纪律'),
+        title: Text(isNew ? '新增原则' : '修改原则'),
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
-            labelText: '纪律内容',
+            labelText: '原则内容',
             border: OutlineInputBorder(),
           ),
           maxLines: 3,
@@ -80,7 +80,7 @@ class _RulesManagePageState extends State<RulesManagePage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('删除纪律'),
+        title: const Text('删除原则'),
         content: Text('确定要删除"${rule.content}"吗？'),
         actions: [
           TextButton(
@@ -107,7 +107,7 @@ class _RulesManagePageState extends State<RulesManagePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('交易纪律管理')),
+      appBar: AppBar(title: const Text('交易原则管理')),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showRuleDialog(),
         child: const Icon(Icons.add),
@@ -126,7 +126,7 @@ class _RulesManagePageState extends State<RulesManagePage> {
           final rules = snapshot.data ?? <TradingRule>[];
 
           if (rules.isEmpty) {
-            return const Center(child: Text('暂无交易纪律，点击右下角 + 新增'));
+            return const Center(child: Text('暂无交易原则，点击右下角 + 新增'));
           }
 
           return ReorderableListView.builder(
