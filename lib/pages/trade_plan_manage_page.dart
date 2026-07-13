@@ -6,7 +6,9 @@ import '../repositories/trade_plan_repository.dart';
 import 'trade_plan_page.dart';
 
 class TradePlanManagePage extends StatefulWidget {
-  const TradePlanManagePage({super.key});
+  const TradePlanManagePage({super.key, this.initialStatus});
+
+  final TradePlanStatus? initialStatus;
 
   @override
   State<TradePlanManagePage> createState() => _TradePlanManagePageState();
@@ -27,6 +29,8 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
   @override
   void initState() {
     super.initState();
+
+    _statusFilter = widget.initialStatus;
 
     _loadPlans();
   }
@@ -54,6 +58,18 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
 
       case TradePlanStatus.cancelled:
         return "已取消";
+    }
+  }
+
+  Future<void> _createPlan() async {
+    final result = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const TradePlanPage()));
+
+    if (result == true) {
+      setState(() {
+        _loadPlans();
+      });
     }
   }
 
@@ -95,7 +111,7 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
 
   Widget _buildStatusFilter() {
     return DropdownButtonFormField<TradePlanStatus?>(
-      value: _statusFilter,
+      initialValue: _statusFilter,
 
       decoration: const InputDecoration(
         labelText: "状态",
@@ -121,7 +137,7 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
 
   Widget _buildDateFilter() {
     return DropdownButtonFormField<int>(
-      value: _daysFilter,
+      initialValue: _daysFilter,
 
       decoration: const InputDecoration(
         labelText: "时间",
@@ -149,6 +165,11 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("维护交易计划")),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: _createPlan,
+        child: const Icon(Icons.add),
+      ),
 
       body: FutureBuilder<List<TradePlan>>(
         future: _plansFuture,

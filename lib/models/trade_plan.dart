@@ -24,11 +24,18 @@ class TradePlan {
 
   final String reason;
 
-  /// 计划买入：单日或开始日期
-  final DateTime? plannedBuyDate;
+  /// 买入条件
+  final String? buyCondition1;
+  final String? buyCondition2;
+  final String? buyCondition3;
 
-  /// 计划买入结束日期（可选，表示区间）
-  final DateTime? plannedBuyEndDate;
+  /// 卖出条件
+  final String? sellCondition1;
+  final String? sellCondition2;
+  final String? sellCondition3;
+
+  /// 执行补充说明
+  final String? executionNote;
 
   /// 执行相关信息
   final DateTime? executedAt;
@@ -60,10 +67,17 @@ class TradePlan {
 
     required this.reason,
 
-    this.status = TradePlanStatus.draft,
+    this.buyCondition1,
+    this.buyCondition2,
+    this.buyCondition3,
 
-    this.plannedBuyDate,
-    this.plannedBuyEndDate,
+    this.sellCondition1,
+    this.sellCondition2,
+    this.sellCondition3,
+
+    this.executionNote,
+
+    this.status = TradePlanStatus.draft,
     this.executedAt,
     this.executedBuyPrice,
     this.executedSellPrice,
@@ -92,10 +106,16 @@ class TradePlan {
       'position_ratio': positionRatio,
 
       'reason': reason,
-      'status': status.name,
+      'buy_condition1': buyCondition1,
+      'buy_condition2': buyCondition2,
+      'buy_condition3': buyCondition3,
 
-      'planned_buy_date': plannedBuyDate?.toIso8601String(),
-      'planned_buy_end_date': plannedBuyEndDate?.toIso8601String(),
+      'sell_condition1': sellCondition1,
+      'sell_condition2': sellCondition2,
+      'sell_condition3': sellCondition3,
+
+      'execution_note': executionNote,
+      'status': status.name,
 
       'executed_at': executedAt?.toIso8601String(),
       'executed_buy_price': executedBuyPrice,
@@ -126,19 +146,20 @@ class TradePlan {
       positionRatio: map['position_ratio'],
 
       reason: map['reason'],
+      buyCondition1: map['buy_condition1'],
+      buyCondition2: map['buy_condition2'],
+      buyCondition3: map['buy_condition3'],
 
+      sellCondition1: map['sell_condition1'],
+      sellCondition2: map['sell_condition2'],
+      sellCondition3: map['sell_condition3'],
+
+      executionNote: map['execution_note'],
       status: TradePlanStatus.values.firstWhere(
         (e) => e.name == map['status'],
 
         orElse: () => TradePlanStatus.draft,
       ),
-
-      plannedBuyDate: map['planned_buy_date'] != null
-          ? DateTime.parse(map['planned_buy_date'])
-          : null,
-      plannedBuyEndDate: map['planned_buy_end_date'] != null
-          ? DateTime.parse(map['planned_buy_end_date'])
-          : null,
 
       executedAt: map['executed_at'] != null
           ? DateTime.parse(map['executed_at'])
@@ -175,10 +196,17 @@ class TradePlan {
     double? targetPrice,
     double? positionRatio,
     String? reason,
+    String? buyCondition1,
+    String? buyCondition2,
+    String? buyCondition3,
+
+    String? sellCondition1,
+    String? sellCondition2,
+    String? sellCondition3,
+
+    String? executionNote,
     TradePlanStatus? status,
     DateTime? createdAt,
-    DateTime? plannedBuyDate,
-    DateTime? plannedBuyEndDate,
     DateTime? executedAt,
     double? executedBuyPrice,
     double? executedSellPrice,
@@ -196,9 +224,16 @@ class TradePlan {
       targetPrice: targetPrice ?? this.targetPrice,
       positionRatio: positionRatio ?? this.positionRatio,
       reason: reason ?? this.reason,
+      buyCondition1: buyCondition1 ?? this.buyCondition1,
+      buyCondition2: buyCondition2 ?? this.buyCondition2,
+      buyCondition3: buyCondition3 ?? this.buyCondition3,
+
+      sellCondition1: sellCondition1 ?? this.sellCondition1,
+      sellCondition2: sellCondition2 ?? this.sellCondition2,
+      sellCondition3: sellCondition3 ?? this.sellCondition3,
+
+      executionNote: executionNote ?? this.executionNote,
       status: status ?? this.status,
-      plannedBuyDate: plannedBuyDate ?? this.plannedBuyDate,
-      plannedBuyEndDate: plannedBuyEndDate ?? this.plannedBuyEndDate,
       executedAt: executedAt ?? this.executedAt,
       executedBuyPrice: executedBuyPrice ?? this.executedBuyPrice,
       executedSellPrice: executedSellPrice ?? this.executedSellPrice,
@@ -213,6 +248,6 @@ class TradePlan {
 
   @override
   String toString() {
-    return 'TradePlan{id: $id, stockCode: $stockCode, stockName: $stockName, buyPrice: $buyPrice, stopLossPrice: $stopLossPrice, targetPrice: $targetPrice, positionRatio: $positionRatio, reason: $reason, plannedBuyDate: $plannedBuyDate, plannedBuyEndDate: $plannedBuyEndDate, executedAt: $executedAt, executedBuyPrice: $executedBuyPrice, executedSellPrice: $executedSellPrice, executedSellDate: $executedSellDate, executedPositionRatio: $executedPositionRatio, executedMatched: $executedMatched, executedReturnRate: $executedReturnRate, status: ${status.name}, createdAt: ${createdAt.toIso8601String()}}';
+    return 'TradePlan{id: $id, stockCode: $stockCode, stockName: $stockName, buyPrice: $buyPrice, stopLossPrice: $stopLossPrice, targetPrice: $targetPrice, positionRatio: $positionRatio, reason: $reason,executedAt: $executedAt, executedBuyPrice: $executedBuyPrice, executedSellPrice: $executedSellPrice, executedSellDate: $executedSellDate, executedPositionRatio: $executedPositionRatio, executedMatched: $executedMatched, executedReturnRate: $executedReturnRate, status: ${status.name}, createdAt: ${createdAt.toIso8601String()}}';
   }
 }

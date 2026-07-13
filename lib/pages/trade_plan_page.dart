@@ -23,8 +23,15 @@ class _TradePlanPageState extends State<TradePlanPage> {
   late TextEditingController _targetPriceCtrl;
   late TextEditingController _positionRatioCtrl;
   late TextEditingController _reasonCtrl;
-  DateTime? _plannedBuyDate;
-  DateTime? _plannedBuyEndDate;
+  late TextEditingController _buyCondition1Ctrl;
+  late TextEditingController _buyCondition2Ctrl;
+  late TextEditingController _buyCondition3Ctrl;
+
+  late TextEditingController _sellCondition1Ctrl;
+  late TextEditingController _sellCondition2Ctrl;
+  late TextEditingController _sellCondition3Ctrl;
+
+  late TextEditingController _executionNoteCtrl;
 
   DateTime? _executedAt;
   DateTime? _executedSellDate;
@@ -53,8 +60,22 @@ class _TradePlanPageState extends State<TradePlanPage> {
       text: p?.positionRatio.toString() ?? '',
     );
     _reasonCtrl = TextEditingController(text: p?.reason ?? '');
-    _plannedBuyDate = p?.plannedBuyDate;
-    _plannedBuyEndDate = p?.plannedBuyEndDate;
+
+    _reasonCtrl = TextEditingController(text: p?.reason ?? '');
+
+    _buyCondition1Ctrl = TextEditingController(text: p?.buyCondition1 ?? '');
+
+    _buyCondition2Ctrl = TextEditingController(text: p?.buyCondition2 ?? '');
+
+    _buyCondition3Ctrl = TextEditingController(text: p?.buyCondition3 ?? '');
+
+    _sellCondition1Ctrl = TextEditingController(text: p?.sellCondition1 ?? '');
+
+    _sellCondition2Ctrl = TextEditingController(text: p?.sellCondition2 ?? '');
+
+    _sellCondition3Ctrl = TextEditingController(text: p?.sellCondition3 ?? '');
+
+    _executionNoteCtrl = TextEditingController(text: p?.executionNote ?? '');
 
     _executedAt = p?.executedAt;
     _executedSellDate = p?.executedSellDate;
@@ -115,6 +136,15 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   targetPrice: target,
                   positionRatio: ratio,
                   reason: _reasonCtrl.text,
+                  buyCondition1: _buyCondition1Ctrl.text,
+                  buyCondition2: _buyCondition2Ctrl.text,
+                  buyCondition3: _buyCondition3Ctrl.text,
+
+                  sellCondition1: _sellCondition1Ctrl.text,
+                  sellCondition2: _sellCondition2Ctrl.text,
+                  sellCondition3: _sellCondition3Ctrl.text,
+
+                  executionNote: _executionNoteCtrl.text,
                   createdAt: now,
                 ))
             .copyWith(
@@ -126,8 +156,6 @@ class _TradePlanPageState extends State<TradePlanPage> {
               positionRatio: ratio,
               reason: _reasonCtrl.text,
               status: _status,
-              plannedBuyDate: _plannedBuyDate,
-              plannedBuyEndDate: _plannedBuyEndDate,
               executedAt: _executedAt,
               executedBuyPrice: executedBuyPrice,
               executedSellPrice: executedSellPrice,
@@ -138,10 +166,27 @@ class _TradePlanPageState extends State<TradePlanPage> {
               createdAt: widget.plan?.createdAt ?? now,
             );
 
-    if (newPlan.id == null) {
-      await _repository.insertPlan(newPlan);
-    } else {
-      await _repository.updatePlan(newPlan);
+    try {
+      if (newPlan.id == null) {
+        await _repository.insertPlan(newPlan);
+      } else {
+        await _repository.updatePlan(newPlan);
+      }
+    } catch (e, stack) {
+      debugPrint("保存交易计划异常:");
+      debugPrint(e.toString());
+      debugPrint(stack.toString());
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("保存失败:\n$e"),
+          duration: const Duration(seconds: 5),
+        ),
+      );
+
+      return;
     }
 
     if (!mounted) return;
@@ -295,64 +340,6 @@ class _TradePlanPageState extends State<TradePlanPage> {
                 decoration: const InputDecoration(labelText: '交易理由'),
                 maxLines: 3,
                 validator: _requiredValidator,
-              ),
-              const SizedBox(height: 12),
-              const Text('计划买入', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () async {
-                        final d = await showDatePicker(
-                          context: context,
-                          initialDate: _plannedBuyDate ?? DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                        );
-                        if (d != null) setState(() => _plannedBuyDate = d);
-                      },
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: '计划买入日期（开始）',
-                        ),
-                        child: Text(
-                          _plannedBuyDate == null
-                              ? '未设置'
-                              : _plannedBuyDate!.toLocal().toString().split(
-                                  ' ',
-                                )[0],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: InkWell(
-                      onTap: () async {
-                        final d = await showDatePicker(
-                          context: context,
-                          initialDate: _plannedBuyEndDate ?? DateTime.now(),
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2100),
-                        );
-                        if (d != null) setState(() => _plannedBuyEndDate = d);
-                      },
-                      child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: '计划买入日期（结束，可选）',
-                        ),
-                        child: Text(
-                          _plannedBuyEndDate == null
-                              ? '未设置'
-                              : _plannedBuyEndDate!.toLocal().toString().split(
-                                  ' ',
-                                )[0],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
               const SizedBox(height: 12),
               const Text('执行信息', style: TextStyle(fontWeight: FontWeight.bold)),

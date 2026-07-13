@@ -24,6 +24,12 @@ class _RulesManagePageState extends State<RulesManagePage> {
     _rulesFuture = _repository.getAllRules();
   }
 
+  Future<void> _saveRuleOrder(List<TradingRule> rules) async {
+    for (int i = 0; i < rules.length; i++) {
+      await _repository.updateRule(rules[i].copyWith(sortOrder: i + 1));
+    }
+  }
+
   Future<void> _showRuleDialog({TradingRule? rule}) async {
     final controller = TextEditingController(text: rule?.content ?? '');
     final isNew = rule == null;
@@ -131,17 +137,18 @@ class _RulesManagePageState extends State<RulesManagePage> {
 
           return ReorderableListView.builder(
             itemCount: rules.length,
-            onReorder: (oldIndex, newIndex) async {
+            onReorderItem: (oldIndex, newIndex) {
               setState(() {
-                if (newIndex > oldIndex) newIndex--;
+                if (newIndex > oldIndex) {
+                  newIndex--;
+                }
+
                 final item = rules.removeAt(oldIndex);
+
                 rules.insert(newIndex, item);
               });
-              for (int i = 0; i < rules.length; i++) {
-                await _repository.updateRule(
-                  rules[i].copyWith(sortOrder: i + 1),
-                );
-              }
+
+              _saveRuleOrder(rules);
             },
             itemBuilder: (context, index) {
               final rule = rules[index];

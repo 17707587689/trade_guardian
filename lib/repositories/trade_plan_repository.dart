@@ -1,7 +1,6 @@
-import 'package:sqflite/sqflite.dart';
-
 import '../database/database_helper.dart';
 import '../models/trade_plan.dart';
+import '../models/execution_statistic.dart';
 
 class TradePlanRepository {
   TradePlanRepository({DatabaseHelper? databaseHelper})
@@ -51,5 +50,31 @@ class TradePlanRepository {
   Future<int> deletePlan(int id) async {
     final db = await _databaseHelper.database;
     return db.delete('trade_plans', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<ExecutionStatistic> getExecutionStatistic(Duration duration) async {
+    final plans = await getAllPlans();
+
+    final now = DateTime.now();
+
+    final start = now.subtract(duration);
+
+    final completedPlans = plans.where((p) {
+      if (p.status != TradePlanStatus.completed) {
+        return false;
+      }
+
+      if (p.executedSellDate == null) {
+        return false;
+      }
+
+      return p.executedSellDate!.isAfter(start);
+    }).toList();
+
+    final matched = completedPlans
+        .where((p) => p.executedMatched == true)
+        .length;
+
+    return ExecutionStatistic(matched: matched, total: completedPlans.length);
   }
 }

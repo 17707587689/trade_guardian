@@ -4,7 +4,17 @@ import '../models/trading_rule.dart';
 import '../repositories/trading_rule_repository.dart';
 
 class TradeRuleConfirmDialog extends StatefulWidget {
-  const TradeRuleConfirmDialog({super.key});
+  final bool showEastMoneyButton;
+
+  final bool cancelEnabled;
+
+  const TradeRuleConfirmDialog({
+    super.key,
+
+    this.showEastMoneyButton = true,
+
+    this.cancelEnabled = true,
+  });
 
   @override
   State<TradeRuleConfirmDialog> createState() => _TradeRuleConfirmDialogState();
@@ -108,13 +118,14 @@ class _TradeRuleConfirmDialogState extends State<TradeRuleConfirmDialog> {
       ),
 
       actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context, false);
-          },
+        if (widget.cancelEnabled)
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context, false);
+            },
 
-          child: const Text("取消"),
-        ),
+            child: const Text('取消'),
+          ),
 
         ElevatedButton(
           onPressed: allChecked
@@ -123,7 +134,7 @@ class _TradeRuleConfirmDialogState extends State<TradeRuleConfirmDialog> {
                 }
               : null,
 
-          child: const Text("进入东方财富"),
+          child: Text(widget.showEastMoneyButton ? '进入东方财富' : '确认'),
         ),
       ],
     );

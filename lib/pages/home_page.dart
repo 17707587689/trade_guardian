@@ -1,16 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:android_intent_plus/android_intent.dart';
 
 import '../models/trade_plan.dart';
+import '../models/execution_statistic.dart';
 import '../repositories/trade_plan_repository.dart';
 import '../widgets/trade_rule_confirm_dialog.dart';
 
 import 'rules_manage_page.dart';
-import 'trade_plan_page.dart';
 import 'trade_plan_manage_page.dart';
-import 'trade_plan_history_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,12 +22,17 @@ class _HomePageState extends State<HomePage> {
   final TradePlanRepository _repository = TradePlanRepository();
 
   late Future<List<TradePlan>> _plansFuture;
+  late Future<ExecutionStatistic> _weekStatistic;
 
+  late Future<ExecutionStatistic> _monthStatistic;
+
+  late Future<ExecutionStatistic> _quarterStatistic;
   @override
   void initState() {
     super.initState();
 
     _loadPlans();
+    _loadStatistics();
   }
 
   void _loadPlans() {
@@ -37,50 +41,89 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-  String _statusLabel(TradePlanStatus s) {
-    switch (s) {
-      case TradePlanStatus.draft:
-        return '草稿';
+  void _loadStatistics() {
+    _weekStatistic = _repository.getExecutionStatistic(const Duration(days: 7));
 
-      case TradePlanStatus.pendingeffective:
-        return '待生效';
+    _monthStatistic = _repository.getExecutionStatistic(
+      const Duration(days: 30),
+    );
 
-      case TradePlanStatus.effective:
-        return '生效中';
-
-      case TradePlanStatus.executing:
-        return '执行中';
-
-      case TradePlanStatus.completed:
-        return '已完成';
-
-      case TradePlanStatus.cancelled:
-        return '已取消';
-    }
+    _quarterStatistic = _repository.getExecutionStatistic(
+      const Duration(days: 90),
+    );
   }
 
-  Color _statusColor(TradePlanStatus status) {
-    switch (status) {
-      case TradePlanStatus.pendingeffective:
-        return Colors.orange;
+  Widget _buildClickableCountItem(
+    String title,
+    String value,
+    TradePlanStatus status,
+  ) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
 
-      case TradePlanStatus.effective:
-        return Colors.blue;
+      onTap: () {
+        _openPlanManage(status);
+      },
 
-      case TradePlanStatus.executing:
-        return Colors.green;
+      child: Padding(
+        padding: const EdgeInsets.all(8),
 
-      default:
-        return Colors.grey;
-    }
+        child: Column(
+          children: [
+            Text(
+              value,
+
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+
+            Text(title, style: const TextStyle(color: Colors.grey)),
+          ],
+        ),
+      ),
+    );
   }
 
-  Widget _buildCountItem(String title, String value) {
+  Widget _buildExecutionCard(
+    AsyncSnapshot<ExecutionStatistic> week,
+    AsyncSnapshot<ExecutionStatistic> month,
+    AsyncSnapshot<ExecutionStatistic> quarter,
+  ) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+
+        child: Column(
+          children: [
+            const Text(
+              '按计划执行',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 20),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+
+              children: [
+                _buildStatisticItem('近7天', week.data?.display ?? '-'),
+
+                _buildStatisticItem('近30天', month.data?.display ?? '-'),
+
+                _buildStatisticItem('近90天', quarter.data?.display ?? '-'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatisticItem(String title, String value) {
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
 
         Text(title, style: const TextStyle(color: Colors.grey)),
@@ -88,35 +131,37 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> _openPlanManage() async {
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const TradePlanManagePage()));
+  Future<void> _openPlanManage(TradePlanStatus status) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => TradePlanManagePage(initialStatus: status),
+      ),
+    );
+
+    if (!mounted) return;
 
     _loadPlans();
   }
 
-  Future<void> _openEditor([TradePlan? plan]) async {
-    final result = await Navigator.of(
+  Future<void> _openAllPlanManage() async {
+    await Navigator.of(
       context,
-    ).push<bool>(MaterialPageRoute(builder: (_) => TradePlanPage(plan: plan)));
+    ).push(MaterialPageRoute(builder: (_) => const TradePlanManagePage()));
 
-    if (result == true) {
-      _loadPlans();
-    }
+    if (!mounted) return;
+
+    _loadPlans();
   }
 
   Future<void> _openEastMoneyApp() async {
     final confirmed = await showDialog<bool>(
       context: context,
-
       barrierDismissible: false,
-
       builder: (_) {
-        return const TradeRuleConfirmDialog();
+        return const TradeRuleConfirmDialog(showEastMoneyButton: false);
       },
     );
-
+    if (!mounted) return;
     if (confirmed != true) {
       return;
     }
@@ -124,25 +169,22 @@ class _HomePageState extends State<HomePage> {
     if (!Platform.isAndroid) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('当前平台不支持直接打开东方财富应用。')));
-
+      ).showSnackBar(const SnackBar(content: Text('当前平台不支持打开东方财富')));
       return;
     }
 
-    final androidIntent = Uri.parse(
-      'intent://#Intent;package=com.eastmoney.android.berlin;end',
-    );
+    try {
+      final intent = AndroidIntent(
+        componentName: 'com.eastmoney.android.berlin.activity.MainActivity',
+      );
 
-    final launched = await launchUrl(
-      androidIntent,
+      await intent.launch();
+    } catch (e) {
+      if (!mounted) return;
 
-      mode: LaunchMode.externalApplication,
-    );
-
-    if (!launched) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('打开东方财富失败，请确认已安装该应用。')));
+      ).showSnackBar(const SnackBar(content: Text('无法打开东方财富，请确认已安装东方财富APP')));
     }
   }
 
@@ -221,10 +263,35 @@ class _HomePageState extends State<HomePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
 
                       children: [
-                        _buildCountItem("关注计划", homePlans.length.toString()),
+                        _buildClickableCountItem(
+                          "执行中",
 
-                        _buildCountItem(
+                          homePlans
+                              .where(
+                                (p) => p.status == TradePlanStatus.executing,
+                              )
+                              .length
+                              .toString(),
+
+                          TradePlanStatus.executing,
+                        ),
+
+                        _buildClickableCountItem(
+                          "生效中",
+
+                          homePlans
+                              .where(
+                                (p) => p.status == TradePlanStatus.effective,
+                              )
+                              .length
+                              .toString(),
+
+                          TradePlanStatus.effective,
+                        ),
+
+                        _buildClickableCountItem(
                           "待生效",
+
                           homePlans
                               .where(
                                 (p) =>
@@ -233,110 +300,43 @@ class _HomePageState extends State<HomePage> {
                               )
                               .length
                               .toString(),
-                        ),
 
-                        _buildCountItem(
-                          "执行中",
-                          homePlans
-                              .where(
-                                (p) => p.status == TradePlanStatus.executing,
-                              )
-                              .length
-                              .toString(),
+                          TradePlanStatus.pendingeffective,
                         ),
                       ],
                     ),
                   ),
                 ),
-
-                Expanded(
-                  child: homePlans.isEmpty
-                      ? const Center(child: Text('暂无交易计划'))
-                      : ListView.separated(
-                          itemCount: homePlans.length,
-
-                          separatorBuilder: (_, _) => const Divider(),
-
-                          itemBuilder: (context, index) {
-                            final p = homePlans[index];
-
-                            final plannedLabel = p.plannedBuyDate != null
-                                ? p.plannedBuyDate!.toLocal().toString().split(
-                                    ' ',
-                                  )[0]
-                                : p.createdAt.toLocal().toString().split(
-                                    ' ',
-                                  )[0];
-
-                            final execLabel = p.executedAt != null
-                                ? '已执行 ${p.executedAt!.toLocal().toString().split(' ')[0]}'
-                                : '';
-
-                            return Card(
-                              elevation: 3,
-
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.all(16),
-
-                                title: Text(
-                                  '${p.stockCode} ${p.stockName}',
-
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-
-                                    fontSize: 18,
-                                  ),
-                                ),
-
-                                subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-
-                                  child: Text(
-                                    '制定日期：${p.createdAt.toLocal().toString().split(" ")[0]}',
-                                  ),
-                                ),
-
-                                trailing: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
-
-                                  decoration: BoxDecoration(
-                                    color: _statusColor(
-                                      p.status,
-                                    ).withOpacity(0.15),
-
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-
-                                  child: Text(
-                                    _statusLabel(p.status),
-
-                                    style: TextStyle(
-                                      color: _statusColor(p.status),
-
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-
-                                onTap: () => _openEditor(p),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-
                 const SizedBox(height: 12),
 
+                FutureBuilder(
+                  future: _weekStatistic,
+
+                  builder: (context, weekSnapshot) {
+                    return FutureBuilder(
+                      future: _monthStatistic,
+
+                      builder: (context, monthSnapshot) {
+                        return FutureBuilder(
+                          future: _quarterStatistic,
+
+                          builder: (context, quarterSnapshot) {
+                            return _buildExecutionCard(
+                              weekSnapshot,
+                              monthSnapshot,
+                              quarterSnapshot,
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                const Spacer(),
                 ElevatedButton(
-                  onPressed: _openPlanManage,
-                  child: const Text("维护交易计划"),
+                  onPressed: _openAllPlanManage,
+                  child: const Text("管理交易计划"),
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton(

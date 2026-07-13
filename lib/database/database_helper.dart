@@ -25,8 +25,12 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 6,
+
+      // 当前数据库版本
+      version: 7,
+
       onCreate: _createDB,
+
       onUpgrade: _upgradeDB,
     );
   }
@@ -52,17 +56,44 @@ class DatabaseHelper {
 
         reason TEXT NOT NULL,
 
+        buy_condition_1 TEXT,
+
+        buy_condition_2 TEXT,
+
+        buy_condition_3 TEXT,
+
+        sell_condition_1 TEXT,
+
+        sell_condition_2 TEXT,
+
+        sell_condition_3 TEXT,
+
+        execution_note TEXT,
+
+
+        -- 交易计划状态
         status TEXT NOT NULL,
 
-        planned_buy_date TEXT,
-        planned_buy_end_date TEXT,
 
+        -- 实际执行信息
         executed_at TEXT,
+
         executed_buy_price REAL,
+
         executed_sell_price REAL,
+
         executed_sell_date TEXT,
+
         executed_position_ratio REAL,
-        executed_matched INTEGER,
+
+
+        -- 是否符合计划
+        executed_matched INTEGER DEFAULT 0,
+
+
+        -- 实际收益率
+        executed_return_rate REAL,
+
 
         created_at TEXT NOT NULL
 
@@ -102,6 +133,7 @@ class DatabaseHelper {
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    // v2 增加交易原则表
     if (oldVersion < 2) {
       await db.execute('''
 
@@ -117,9 +149,10 @@ class DatabaseHelper {
 
       )
 
-    ''');
+      ''');
     }
 
+    // v3 增加每日确认记录
     if (oldVersion < 3) {
       await db.execute('''
 
@@ -133,41 +166,92 @@ class DatabaseHelper {
 
       )
 
-    ''');
+      ''');
     }
 
+    // v4 增加计划和执行字段
     if (oldVersion < 4) {
       await db.execute('''
-        ALTER TABLE trade_plans ADD COLUMN planned_buy_date TEXT;
-      ''');
+        ALTER TABLE trade_plans
+        ADD COLUMN planned_buy_date TEXT
+        ''');
+
       await db.execute('''
-        ALTER TABLE trade_plans ADD COLUMN planned_buy_end_date TEXT;
-      ''');
+        ALTER TABLE trade_plans
+        ADD COLUMN planned_buy_end_date TEXT
+        ''');
+
       await db.execute('''
-        ALTER TABLE trade_plans ADD COLUMN executed_at TEXT;
-      ''');
+        ALTER TABLE trade_plans
+        ADD COLUMN executed_at TEXT
+        ''');
+
       await db.execute('''
-        ALTER TABLE trade_plans ADD COLUMN executed_buy_price REAL;
-      ''');
+        ALTER TABLE trade_plans
+        ADD COLUMN executed_buy_price REAL
+        ''');
+
       await db.execute('''
-        ALTER TABLE trade_plans ADD COLUMN executed_position_ratio REAL;
-      ''');
+        ALTER TABLE trade_plans
+        ADD COLUMN executed_position_ratio REAL
+        ''');
+
       await db.execute('''
-        ALTER TABLE trade_plans ADD COLUMN executed_matched INTEGER;
-      ''');
+        ALTER TABLE trade_plans
+        ADD COLUMN executed_matched INTEGER DEFAULT 0
+        ''');
     }
+
+    // v5 增加收益率
     if (oldVersion < 5) {
       await db.execute('''
-        ALTER TABLE trade_plans ADD COLUMN executed_return_rate REAL;
-      ''');
+        ALTER TABLE trade_plans
+        ADD COLUMN executed_return_rate REAL
+        ''');
     }
+
+    // v6 增加卖出信息
     if (oldVersion < 6) {
       await db.execute('''
-        ALTER TABLE trade_plans ADD COLUMN executed_sell_price REAL;
-      ''');
+        ALTER TABLE trade_plans
+        ADD COLUMN executed_sell_price REAL
+        ''');
+
       await db.execute('''
-        ALTER TABLE trade_plans ADD COLUMN executed_sell_date TEXT;
-      ''');
+        ALTER TABLE trade_plans
+        ADD COLUMN executed_sell_date TEXT
+        ''');
+    }
+
+    // v7 预留扩展
+    if (oldVersion < 7) {
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN buy_condition1 TEXT;
+''');
+
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN buy_condition2 TEXT;
+''');
+
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN buy_condition3 TEXT;
+''');
+
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN sell_condition1 TEXT;
+''');
+
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN sell_condition2 TEXT;
+''');
+
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN sell_condition3 TEXT;
+''');
+
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN execution_note TEXT;
+''');
     }
   }
 
@@ -176,6 +260,7 @@ class DatabaseHelper {
 
     if (db != null) {
       await db.close();
+
       _database = null;
     }
   }

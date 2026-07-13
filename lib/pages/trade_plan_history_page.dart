@@ -65,7 +65,6 @@ class _TradePlanHistoryPageState extends State<TradePlanHistoryPage> {
         p.id?.toString() ?? '',
         p.stockCode,
         p.stockName,
-        p.plannedBuyDate?.toIso8601String() ?? '',
         p.executedAt?.toIso8601String() ?? '',
         p.executedBuyPrice?.toString() ?? '',
         p.executedSellDate?.toIso8601String() ?? '',
@@ -147,9 +146,6 @@ class _TradePlanHistoryPageState extends State<TradePlanHistoryPage> {
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  '计划: ${p.plannedBuyDate?.toLocal().toString().split(' ')[0] ?? '-'}',
-                                ),
                                 Text(
                                   '实际买入: ${p.executedAt?.toLocal().toString().split(' ')[0] ?? '-'}  价格: ${p.executedBuyPrice ?? '-'}  仓位: ${p.executedPositionRatio ?? '-'}',
                                 ),
