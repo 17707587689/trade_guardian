@@ -22,16 +22,20 @@ class _TradePlanPageState extends State<TradePlanPage> {
   late TextEditingController _stopLossCtrl;
   late TextEditingController _targetPriceCtrl;
   late TextEditingController _positionRatioCtrl;
-  late TextEditingController _reasonCtrl;
   late TextEditingController _buyCondition1Ctrl;
   late TextEditingController _buyCondition2Ctrl;
   late TextEditingController _buyCondition3Ctrl;
+  late TextEditingController _reasonCtrl;
 
   late TextEditingController _sellCondition1Ctrl;
   late TextEditingController _sellCondition2Ctrl;
   late TextEditingController _sellCondition3Ctrl;
 
   late TextEditingController _executionNoteCtrl;
+
+  bool _allowT = false;
+
+  DateTime? _plannedDate;
 
   DateTime? _executedAt;
   DateTime? _executedSellDate;
@@ -59,21 +63,18 @@ class _TradePlanPageState extends State<TradePlanPage> {
     _positionRatioCtrl = TextEditingController(
       text: p?.positionRatio.toString() ?? '',
     );
-    _reasonCtrl = TextEditingController(text: p?.reason ?? '');
-
-    _reasonCtrl = TextEditingController(text: p?.reason ?? '');
-
     _buyCondition1Ctrl = TextEditingController(text: p?.buyCondition1 ?? '');
-
     _buyCondition2Ctrl = TextEditingController(text: p?.buyCondition2 ?? '');
-
     _buyCondition3Ctrl = TextEditingController(text: p?.buyCondition3 ?? '');
+    _reasonCtrl = TextEditingController(text: p?.reason ?? '');
 
     _sellCondition1Ctrl = TextEditingController(text: p?.sellCondition1 ?? '');
-
     _sellCondition2Ctrl = TextEditingController(text: p?.sellCondition2 ?? '');
-
     _sellCondition3Ctrl = TextEditingController(text: p?.sellCondition3 ?? '');
+
+    _allowT = p?.allowT ?? false;
+
+    _plannedDate = p?.plannedDate;
 
     _executionNoteCtrl = TextEditingController(text: p?.executionNote ?? '');
 
@@ -100,7 +101,14 @@ class _TradePlanPageState extends State<TradePlanPage> {
     _stopLossCtrl.dispose();
     _targetPriceCtrl.dispose();
     _positionRatioCtrl.dispose();
+    _buyCondition1Ctrl.dispose();
+    _buyCondition2Ctrl.dispose();
+    _buyCondition3Ctrl.dispose();
     _reasonCtrl.dispose();
+    _sellCondition1Ctrl.dispose();
+    _sellCondition2Ctrl.dispose();
+    _sellCondition3Ctrl.dispose();
+    _executionNoteCtrl.dispose();
     _executedBuyPriceCtrl.dispose();
     _executedSellPriceCtrl.dispose();
     _executedPositionRatioCtrl.dispose();
@@ -139,11 +147,10 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   buyCondition1: _buyCondition1Ctrl.text,
                   buyCondition2: _buyCondition2Ctrl.text,
                   buyCondition3: _buyCondition3Ctrl.text,
-
                   sellCondition1: _sellCondition1Ctrl.text,
                   sellCondition2: _sellCondition2Ctrl.text,
                   sellCondition3: _sellCondition3Ctrl.text,
-
+                  allowT: _allowT,
                   executionNote: _executionNoteCtrl.text,
                   createdAt: now,
                 ))
@@ -155,6 +162,15 @@ class _TradePlanPageState extends State<TradePlanPage> {
               targetPrice: target,
               positionRatio: ratio,
               reason: _reasonCtrl.text,
+              buyCondition1: _buyCondition1Ctrl.text,
+              buyCondition2: _buyCondition2Ctrl.text,
+              buyCondition3: _buyCondition3Ctrl.text,
+              sellCondition1: _sellCondition1Ctrl.text,
+              sellCondition2: _sellCondition2Ctrl.text,
+              sellCondition3: _sellCondition3Ctrl.text,
+              allowT: _allowT,
+              plannedDate: _plannedDate,
+              executionNote: _executionNoteCtrl.text,
               status: _status,
               executedAt: _executedAt,
               executedBuyPrice: executedBuyPrice,
@@ -335,12 +351,101 @@ class _TradePlanPageState extends State<TradePlanPage> {
                 ],
               ),
               const SizedBox(height: 8),
+              const Text('买入条件', style: TextStyle(fontWeight: FontWeight.bold)),
+
+              const SizedBox(height: 8),
+
+              TextFormField(
+                controller: _buyCondition1Ctrl,
+                decoration: const InputDecoration(labelText: '买入条件1'),
+                maxLines: 2,
+              ),
+
+              const SizedBox(height: 8),
+
+              TextFormField(
+                controller: _buyCondition2Ctrl,
+                decoration: const InputDecoration(labelText: '买入条件2'),
+                maxLines: 2,
+              ),
+
+              const SizedBox(height: 8),
+
+              TextFormField(
+                controller: _buyCondition3Ctrl,
+                decoration: const InputDecoration(labelText: '买入条件3'),
+                maxLines: 2,
+              ),
+
+              const SizedBox(height: 12),
+
+              const Text('卖出条件', style: TextStyle(fontWeight: FontWeight.bold)),
+
+              const SizedBox(height: 8),
+
+              TextFormField(
+                controller: _sellCondition1Ctrl,
+                decoration: const InputDecoration(labelText: '卖出条件1'),
+                maxLines: 2,
+              ),
+
+              const SizedBox(height: 8),
+
+              TextFormField(
+                controller: _sellCondition2Ctrl,
+                decoration: const InputDecoration(labelText: '卖出条件2'),
+                maxLines: 2,
+              ),
+
+              const SizedBox(height: 8),
+
+              TextFormField(
+                controller: _sellCondition3Ctrl,
+                decoration: const InputDecoration(labelText: '卖出条件3'),
+                maxLines: 2,
+              ),
+
+              const SizedBox(height: 12),
+
+              CheckboxListTile(
+                value: _allowT,
+                onChanged: (v) => setState(() => _allowT = v ?? false),
+                title: const Text('是否允许做T'),
+                controlAffinity: ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+              ),
+
+              const SizedBox(height: 8),
+
+              InkWell(
+                onTap: () async {
+                  final d = await showDatePicker(
+                    context: context,
+                    initialDate: _plannedDate ?? DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (d != null) setState(() => _plannedDate = d);
+                },
+                child: InputDecorator(
+                  decoration: const InputDecoration(labelText: '计划制定日期（可选）'),
+                  child: Text(
+                    _plannedDate == null
+                        ? '未设置'
+                        : _plannedDate!.toLocal().toString().split(' ')[0],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
               TextFormField(
                 controller: _reasonCtrl,
-                decoration: const InputDecoration(labelText: '交易理由'),
+                decoration: const InputDecoration(labelText: '买入理由'),
                 maxLines: 3,
                 validator: _requiredValidator,
               ),
+
               const SizedBox(height: 12),
               const Text('执行信息', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
@@ -448,6 +553,14 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   ),
                 ],
               ),
+              TextFormField(
+                controller: _executionNoteCtrl,
+                decoration: const InputDecoration(labelText: '执行总结'),
+                maxLines: 3,
+              ),
+
+              const SizedBox(height: 8),
+
               CheckboxListTile(
                 value: _executedMatched,
                 onChanged: (v) => setState(() => _executedMatched = v ?? false),

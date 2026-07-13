@@ -27,7 +27,7 @@ class DatabaseHelper {
       path,
 
       // 当前数据库版本
-      version: 7,
+      version: 9,
 
       onCreate: _createDB,
 
@@ -69,6 +69,10 @@ class DatabaseHelper {
         sell_condition_3 TEXT,
 
         execution_note TEXT,
+
+        allow_t INTEGER DEFAULT 0,
+
+        planned_date TEXT,
 
 
         -- 交易计划状态
@@ -133,124 +137,10 @@ class DatabaseHelper {
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
-    // v2 增加交易原则表
-    if (oldVersion < 2) {
+    // v9 增加计划制定日期字段
+    if (oldVersion < 9) {
       await db.execute('''
-
-      CREATE TABLE trading_rules (
-
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-        content TEXT NOT NULL,
-
-        sort_order INTEGER NOT NULL,
-
-        required INTEGER NOT NULL
-
-      )
-
-      ''');
-    }
-
-    // v3 增加每日确认记录
-    if (oldVersion < 3) {
-      await db.execute('''
-
-      CREATE TABLE daily_rule_checks (
-
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-        check_date TEXT NOT NULL UNIQUE,
-
-        confirmed_at TEXT NOT NULL
-
-      )
-
-      ''');
-    }
-
-    // v4 增加计划和执行字段
-    if (oldVersion < 4) {
-      await db.execute('''
-        ALTER TABLE trade_plans
-        ADD COLUMN planned_buy_date TEXT
-        ''');
-
-      await db.execute('''
-        ALTER TABLE trade_plans
-        ADD COLUMN planned_buy_end_date TEXT
-        ''');
-
-      await db.execute('''
-        ALTER TABLE trade_plans
-        ADD COLUMN executed_at TEXT
-        ''');
-
-      await db.execute('''
-        ALTER TABLE trade_plans
-        ADD COLUMN executed_buy_price REAL
-        ''');
-
-      await db.execute('''
-        ALTER TABLE trade_plans
-        ADD COLUMN executed_position_ratio REAL
-        ''');
-
-      await db.execute('''
-        ALTER TABLE trade_plans
-        ADD COLUMN executed_matched INTEGER DEFAULT 0
-        ''');
-    }
-
-    // v5 增加收益率
-    if (oldVersion < 5) {
-      await db.execute('''
-        ALTER TABLE trade_plans
-        ADD COLUMN executed_return_rate REAL
-        ''');
-    }
-
-    // v6 增加卖出信息
-    if (oldVersion < 6) {
-      await db.execute('''
-        ALTER TABLE trade_plans
-        ADD COLUMN executed_sell_price REAL
-        ''');
-
-      await db.execute('''
-        ALTER TABLE trade_plans
-        ADD COLUMN executed_sell_date TEXT
-        ''');
-    }
-
-    // v7 预留扩展
-    if (oldVersion < 7) {
-      await db.execute('''
-ALTER TABLE trade_plans ADD COLUMN buy_condition1 TEXT;
-''');
-
-      await db.execute('''
-ALTER TABLE trade_plans ADD COLUMN buy_condition2 TEXT;
-''');
-
-      await db.execute('''
-ALTER TABLE trade_plans ADD COLUMN buy_condition3 TEXT;
-''');
-
-      await db.execute('''
-ALTER TABLE trade_plans ADD COLUMN sell_condition1 TEXT;
-''');
-
-      await db.execute('''
-ALTER TABLE trade_plans ADD COLUMN sell_condition2 TEXT;
-''');
-
-      await db.execute('''
-ALTER TABLE trade_plans ADD COLUMN sell_condition3 TEXT;
-''');
-
-      await db.execute('''
-ALTER TABLE trade_plans ADD COLUMN execution_note TEXT;
+ALTER TABLE trade_plans ADD COLUMN planned_date TEXT;
 ''');
     }
   }
