@@ -22,6 +22,8 @@ class _TradePlanPageState extends State<TradePlanPage> {
   late TextEditingController _stopLossCtrl;
   late TextEditingController _targetPriceCtrl;
   late TextEditingController _positionRatioCtrl;
+  late TextEditingController _maxBuyQuantityCtrl;
+  late TextEditingController _maxBuyAmountCtrl;
   late TextEditingController _buyCondition1Ctrl;
   late TextEditingController _buyCondition2Ctrl;
   late TextEditingController _buyCondition3Ctrl;
@@ -42,6 +44,10 @@ class _TradePlanPageState extends State<TradePlanPage> {
   late TextEditingController _executedBuyPriceCtrl;
   late TextEditingController _executedSellPriceCtrl;
   late TextEditingController _executedPositionRatioCtrl;
+  late TextEditingController _buyQuantityCtrl;
+  late TextEditingController _buyTotalAmountCtrl;
+  late TextEditingController _sellTotalAmountCtrl;
+  String? _didT;
   bool _executedMatched = false;
 
   TradePlanStatus _status = TradePlanStatus.draft;
@@ -62,6 +68,12 @@ class _TradePlanPageState extends State<TradePlanPage> {
     );
     _positionRatioCtrl = TextEditingController(
       text: p?.positionRatio.toString() ?? '',
+    );
+    _maxBuyQuantityCtrl = TextEditingController(
+      text: p?.maxBuyQuantity?.toString() ?? '',
+    );
+    _maxBuyAmountCtrl = TextEditingController(
+      text: p?.maxBuyAmount?.toString() ?? '',
     );
     _buyCondition1Ctrl = TextEditingController(text: p?.buyCondition1 ?? '');
     _buyCondition2Ctrl = TextEditingController(text: p?.buyCondition2 ?? '');
@@ -89,6 +101,16 @@ class _TradePlanPageState extends State<TradePlanPage> {
     _executedPositionRatioCtrl = TextEditingController(
       text: p?.executedPositionRatio?.toString() ?? '',
     );
+    _buyQuantityCtrl = TextEditingController(
+      text: p?.buyQuantity?.toString() ?? '',
+    );
+    _buyTotalAmountCtrl = TextEditingController(
+      text: p?.buyTotalAmount?.toString() ?? '',
+    );
+    _sellTotalAmountCtrl = TextEditingController(
+      text: p?.sellTotalAmount?.toString() ?? '',
+    );
+    _didT = p?.didT == null ? null : (p!.didT! ? '是' : '否');
     _executedMatched = p?.executedMatched ?? false;
     _status = p?.status ?? TradePlanStatus.draft;
   }
@@ -101,6 +123,8 @@ class _TradePlanPageState extends State<TradePlanPage> {
     _stopLossCtrl.dispose();
     _targetPriceCtrl.dispose();
     _positionRatioCtrl.dispose();
+    _maxBuyQuantityCtrl.dispose();
+    _maxBuyAmountCtrl.dispose();
     _buyCondition1Ctrl.dispose();
     _buyCondition2Ctrl.dispose();
     _buyCondition3Ctrl.dispose();
@@ -112,6 +136,9 @@ class _TradePlanPageState extends State<TradePlanPage> {
     _executedBuyPriceCtrl.dispose();
     _executedSellPriceCtrl.dispose();
     _executedPositionRatioCtrl.dispose();
+    _buyQuantityCtrl.dispose();
+    _buyTotalAmountCtrl.dispose();
+    _sellTotalAmountCtrl.dispose();
     super.dispose();
   }
 
@@ -122,9 +149,15 @@ class _TradePlanPageState extends State<TradePlanPage> {
     final stopLoss = double.tryParse(_stopLossCtrl.text) ?? 0;
     final target = double.tryParse(_targetPriceCtrl.text) ?? 0;
     final ratio = double.tryParse(_positionRatioCtrl.text) ?? 0;
+    final maxBuyQuantity = double.tryParse(_maxBuyQuantityCtrl.text);
+    final maxBuyAmount = double.tryParse(_maxBuyAmountCtrl.text);
     final executedBuyPrice = double.tryParse(_executedBuyPriceCtrl.text);
     final executedSellPrice = double.tryParse(_executedSellPriceCtrl.text);
     final executedPosRatio = double.tryParse(_executedPositionRatioCtrl.text);
+    final buyQuantity = double.tryParse(_buyQuantityCtrl.text);
+    final buyTotalAmount = double.tryParse(_buyTotalAmountCtrl.text);
+    final sellTotalAmount = double.tryParse(_sellTotalAmountCtrl.text);
+    final didT = _didT == '是' ? true : (_didT == '否' ? false : null);
     final executedReturnRate =
         (executedBuyPrice != null &&
             executedSellPrice != null &&
@@ -150,6 +183,12 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   sellCondition1: _sellCondition1Ctrl.text,
                   sellCondition2: _sellCondition2Ctrl.text,
                   sellCondition3: _sellCondition3Ctrl.text,
+                  maxBuyQuantity: maxBuyQuantity,
+                  maxBuyAmount: maxBuyAmount,
+                  buyQuantity: buyQuantity,
+                  buyTotalAmount: buyTotalAmount,
+                  sellTotalAmount: sellTotalAmount,
+                  didT: didT,
                   allowT: _allowT,
                   executionNote: _executionNoteCtrl.text,
                   createdAt: now,
@@ -168,6 +207,12 @@ class _TradePlanPageState extends State<TradePlanPage> {
               sellCondition1: _sellCondition1Ctrl.text,
               sellCondition2: _sellCondition2Ctrl.text,
               sellCondition3: _sellCondition3Ctrl.text,
+              maxBuyQuantity: maxBuyQuantity,
+              maxBuyAmount: maxBuyAmount,
+              buyQuantity: buyQuantity,
+              buyTotalAmount: buyTotalAmount,
+              sellTotalAmount: sellTotalAmount,
+              didT: didT,
               allowT: _allowT,
               plannedDate: _plannedDate,
               executionNote: _executionNoteCtrl.text,
@@ -232,6 +277,12 @@ class _TradePlanPageState extends State<TradePlanPage> {
     return null;
   }
 
+  String? _optionalNumberValidator(String? v) {
+    if (v == null || v.trim().isEmpty) return null;
+    if (double.tryParse(v) == null) return '请输入数字';
+    return null;
+  }
+
   String _statusLabel(TradePlanStatus s) {
     switch (s) {
       case TradePlanStatus.draft:
@@ -269,6 +320,7 @@ class _TradePlanPageState extends State<TradePlanPage> {
           key: _formKey,
           child: ListView(
             children: [
+              // 股票代码 / 股票名称
               Row(
                 children: [
                   Expanded(
@@ -288,7 +340,8 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
+              // 买入价格 / 止损价格
               Row(
                 children: [
                   Expanded(
@@ -314,7 +367,8 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
+              // 目标价格 / 仓位比例
               Row(
                 children: [
                   Expanded(
@@ -350,63 +404,121 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              const Text('买入条件', style: TextStyle(fontWeight: FontWeight.bold)),
-
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 6),
+              // 最大买入数量（手）/ 最大买入金额（元）
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _maxBuyQuantityCtrl,
+                      decoration: const InputDecoration(
+                        labelText: '最大买入数量（手）',
+                        hintText: '可选',
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: _optionalNumberValidator,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _maxBuyAmountCtrl,
+                      decoration: const InputDecoration(
+                        labelText: '最大买入金额（元）',
+                        hintText: '可选',
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: _optionalNumberValidator,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              // 买入条件1/2/3（无标题，紧凑输入框）
               TextFormField(
                 controller: _buyCondition1Ctrl,
-                decoration: const InputDecoration(labelText: '买入条件1'),
-                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: '买入条件1',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+                maxLines: 1,
               ),
-
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 4),
               TextFormField(
                 controller: _buyCondition2Ctrl,
-                decoration: const InputDecoration(labelText: '买入条件2'),
-                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: '买入条件2',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+                maxLines: 1,
               ),
-
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 4),
               TextFormField(
                 controller: _buyCondition3Ctrl,
-                decoration: const InputDecoration(labelText: '买入条件3'),
-                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: '买入条件3',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+                maxLines: 1,
               ),
-
-              const SizedBox(height: 12),
-
-              const Text('卖出条件', style: TextStyle(fontWeight: FontWeight.bold)),
-
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 6),
+              // 卖出条件1/2/3（无标题，紧凑输入框）
               TextFormField(
                 controller: _sellCondition1Ctrl,
-                decoration: const InputDecoration(labelText: '卖出条件1'),
-                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: '卖出条件1',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+                maxLines: 1,
               ),
-
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 4),
               TextFormField(
                 controller: _sellCondition2Ctrl,
-                decoration: const InputDecoration(labelText: '卖出条件2'),
-                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: '卖出条件2',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+                maxLines: 1,
               ),
-
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 4),
               TextFormField(
                 controller: _sellCondition3Ctrl,
-                decoration: const InputDecoration(labelText: '卖出条件3'),
-                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: '卖出条件3',
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                ),
+                maxLines: 1,
               ),
-
-              const SizedBox(height: 12),
-
+              const SizedBox(height: 6),
+              // 是否允许做T
               CheckboxListTile(
                 value: _allowT,
                 onChanged: (v) => setState(() => _allowT = v ?? false),
@@ -414,9 +526,8 @@ class _TradePlanPageState extends State<TradePlanPage> {
                 controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: EdgeInsets.zero,
               ),
-
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 6),
+              // 计划制定日期
               InkWell(
                 onTap: () async {
                   final d = await showDatePicker(
@@ -436,19 +547,19 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   ),
                 ),
               ),
-
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 6),
+              // 买入理由
               TextFormField(
                 controller: _reasonCtrl,
                 decoration: const InputDecoration(labelText: '买入理由'),
                 maxLines: 3,
                 validator: _requiredValidator,
               ),
-
-              const SizedBox(height: 12),
-              const Text('执行信息', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
+              // ===== 执行信息 =====
+              const Text('执行信息', style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              // 买入日期 / 卖出日期
               Row(
                 children: [
                   Expanded(
@@ -464,7 +575,7 @@ class _TradePlanPageState extends State<TradePlanPage> {
                       },
                       child: InputDecorator(
                         decoration: const InputDecoration(
-                          labelText: '实际买入日期（可选）',
+                          labelText: '买入日期（可选）',
                         ),
                         child: Text(
                           _executedAt == null
@@ -488,7 +599,7 @@ class _TradePlanPageState extends State<TradePlanPage> {
                       },
                       child: InputDecorator(
                         decoration: const InputDecoration(
-                          labelText: '实际卖出日期（可选）',
+                          labelText: '卖出日期（可选）',
                         ),
                         child: Text(
                           _executedSellDate == null
@@ -502,46 +613,108 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
+              // 买入价格 / 卖出价格
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _executedBuyPriceCtrl,
-                      decoration: const InputDecoration(
-                        labelText: '实际买入价格（可选）',
-                      ),
+                      decoration: const InputDecoration(labelText: '买入价格（可选）'),
                       keyboardType: TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       onChanged: (_) => setState(() {}),
+                      validator: _optionalNumberValidator,
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextFormField(
                       controller: _executedSellPriceCtrl,
-                      decoration: const InputDecoration(
-                        labelText: '实际卖出价格（可选）',
-                      ),
+                      decoration: const InputDecoration(labelText: '卖出价格（可选）'),
                       keyboardType: TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       onChanged: (_) => setState(() {}),
+                      validator: _optionalNumberValidator,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
+              // 买入数量（手）/ 买入总金额（元）
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _buyQuantityCtrl,
+                      decoration: const InputDecoration(
+                        labelText: '买入数量（手）（可选）',
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: _optionalNumberValidator,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _buyTotalAmountCtrl,
+                      decoration: const InputDecoration(
+                        labelText: '买入总金额（元）（可选）',
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: _optionalNumberValidator,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              // 是否有做T / 卖出总金额（元）
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      initialValue: _didT,
+                      decoration: const InputDecoration(labelText: '是否有做T（可选）'),
+                      items: const [
+                        DropdownMenuItem(value: '是', child: Text('是')),
+                        DropdownMenuItem(value: '否', child: Text('否')),
+                      ],
+                      onChanged: (v) => setState(() => _didT = v),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _sellTotalAmountCtrl,
+                      decoration: const InputDecoration(
+                        labelText: '卖出总金额（元）（可选）',
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: _optionalNumberValidator,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              // 仓位 / 收益率
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _executedPositionRatioCtrl,
-                      decoration: const InputDecoration(labelText: '实际仓位（可选）'),
+                      decoration: const InputDecoration(labelText: '仓位（可选）'),
                       keyboardType: TextInputType.numberWithOptions(
                         decimal: true,
                       ),
+                      validator: _optionalNumberValidator,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -553,14 +726,14 @@ class _TradePlanPageState extends State<TradePlanPage> {
                   ),
                 ],
               ),
+              // 执行总结
               TextFormField(
                 controller: _executionNoteCtrl,
                 decoration: const InputDecoration(labelText: '执行总结'),
                 maxLines: 3,
               ),
-
-              const SizedBox(height: 8),
-
+              const SizedBox(height: 6),
+              // 是否与计划一致
               CheckboxListTile(
                 value: _executedMatched,
                 onChanged: (v) => setState(() => _executedMatched = v ?? false),
@@ -568,7 +741,8 @@ class _TradePlanPageState extends State<TradePlanPage> {
                 controlAffinity: ListTileControlAffinity.leading,
                 contentPadding: EdgeInsets.zero,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 6),
+              // 状态
               DropdownButtonFormField<TradePlanStatus>(
                 initialValue: _status,
                 decoration: const InputDecoration(labelText: '状态'),
@@ -583,7 +757,8 @@ class _TradePlanPageState extends State<TradePlanPage> {
                 onChanged: (v) =>
                     setState(() => _status = v ?? TradePlanStatus.draft),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+              // 底部按钮
               Row(
                 children: [
                   Expanded(

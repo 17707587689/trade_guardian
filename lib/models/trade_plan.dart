@@ -34,6 +34,18 @@ class TradePlan {
   final String? sellCondition2;
   final String? sellCondition3;
 
+  /// 最大买入数量（手）
+  final double? maxBuyQuantity;
+
+  /// 最大买入金额（元）
+  final double? maxBuyAmount;
+
+  /// 执行信息
+  final double? buyQuantity;
+  final double? buyTotalAmount;
+  final double? sellTotalAmount;
+  final bool? didT;
+
   /// 是否允许做T
   final bool allowT;
 
@@ -81,6 +93,13 @@ class TradePlan {
     this.sellCondition2,
     this.sellCondition3,
 
+    this.maxBuyQuantity,
+    this.maxBuyAmount,
+    this.buyQuantity,
+    this.buyTotalAmount,
+    this.sellTotalAmount,
+    this.didT,
+
     this.allowT = false,
 
     this.plannedDate,
@@ -124,6 +143,12 @@ class TradePlan {
       'sell_condition_2': sellCondition2,
       'sell_condition_3': sellCondition3,
 
+      'max_buy_quantity': maxBuyQuantity,
+      'max_buy_amount': maxBuyAmount,
+      'buy_quantity': buyQuantity,
+      'buy_total_amount': buyTotalAmount,
+      'sell_total_amount': sellTotalAmount,
+      'did_t': didT == true ? 1 : 0,
       'allow_t': allowT == true ? 1 : 0,
 
       'planned_date': plannedDate?.toIso8601String(),
@@ -168,6 +193,22 @@ class TradePlan {
       sellCondition2: map['sell_condition_2'],
       sellCondition3: map['sell_condition_3'],
 
+      maxBuyQuantity: map['max_buy_quantity'] != null
+          ? (map['max_buy_quantity'] as num).toDouble()
+          : null,
+      maxBuyAmount: map['max_buy_amount'] != null
+          ? (map['max_buy_amount'] as num).toDouble()
+          : null,
+      buyQuantity: map['buy_quantity'] != null
+          ? (map['buy_quantity'] as num).toDouble()
+          : null,
+      buyTotalAmount: map['buy_total_amount'] != null
+          ? (map['buy_total_amount'] as num).toDouble()
+          : null,
+      sellTotalAmount: map['sell_total_amount'] != null
+          ? (map['sell_total_amount'] as num).toDouble()
+          : null,
+      didT: map['did_t'] != null ? (map['did_t'] as int) == 1 : null,
       allowT: map['allow_t'] != null ? (map['allow_t'] as int) == 1 : false,
 
       plannedDate: map['planned_date'] != null
@@ -224,6 +265,12 @@ class TradePlan {
     String? sellCondition2,
     String? sellCondition3,
 
+    double? maxBuyQuantity,
+    double? maxBuyAmount,
+    double? buyQuantity,
+    double? buyTotalAmount,
+    double? sellTotalAmount,
+    bool? didT,
     bool? allowT,
 
     DateTime? plannedDate,
@@ -256,6 +303,12 @@ class TradePlan {
       sellCondition2: sellCondition2 ?? this.sellCondition2,
       sellCondition3: sellCondition3 ?? this.sellCondition3,
 
+      maxBuyQuantity: maxBuyQuantity ?? this.maxBuyQuantity,
+      maxBuyAmount: maxBuyAmount ?? this.maxBuyAmount,
+      buyQuantity: buyQuantity ?? this.buyQuantity,
+      buyTotalAmount: buyTotalAmount ?? this.buyTotalAmount,
+      sellTotalAmount: sellTotalAmount ?? this.sellTotalAmount,
+      didT: didT ?? this.didT,
       allowT: allowT ?? this.allowT,
 
       plannedDate: plannedDate ?? this.plannedDate,

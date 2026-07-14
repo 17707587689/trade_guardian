@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:android_intent_plus/android_intent.dart';
+import 'package:flutter/services.dart';
 
 import '../models/trade_plan.dart';
 import '../models/execution_statistic.dart';
@@ -60,48 +60,52 @@ class _HomePageState extends State<HomePage> {
     }
 
     if (statistic.total == 0) {
-      return '0%(0/0)';
+      return '0/0';
     }
 
-    final rate = (statistic.matched / statistic.total * 100).round();
-
-    return '$rate%(${statistic.matched}/${statistic.total})';
+    return '${statistic.matched}/${statistic.total}';
   }
 
   Widget _buildClickableCountItem(
     String title,
     String value,
     TradePlanStatus status,
-    Color color,
-    IconData icon,
   ) {
     return InkWell(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12),
       onTap: () {
         _openPlanManage(status);
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
         decoration: BoxDecoration(
-          color: color.withAlpha(25),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withAlpha(60), width: 1),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
         ),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 6),
+            Icon(
+              status == TradePlanStatus.executing
+                  ? Icons.play_circle_filled
+                  : status == TradePlanStatus.effective
+                  ? Icons.check_circle
+                  : Icons.schedule,
+              color: const Color(0xFF667eea),
+              size: 20,
+            ),
+            const SizedBox(height: 2),
             Text(
               title,
-              style: TextStyle(color: color.withAlpha(180), fontSize: 13),
+              style: const TextStyle(color: Color(0xFF666666), fontSize: 11),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 2),
             Text(
               value,
-              style: TextStyle(
-                fontSize: 28,
+              style: const TextStyle(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: color,
+                color: Color(0xFF333333),
               ),
             ),
           ],
@@ -116,53 +120,29 @@ class _HomePageState extends State<HomePage> {
     AsyncSnapshot<ExecutionStatistic> quarter,
   ) {
     return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF667eea).withAlpha(80),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: Colors.black.withAlpha(8),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.analytics_outlined, color: Colors.white70, size: 20),
-                SizedBox(width: 8),
-                Text(
-                  '执行成功率',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _buildStatisticItem('近7天', _formatSuccessRate(week.data)),
-                Container(width: 1, height: 40, color: Colors.white24),
-                _buildStatisticItem('近30天', _formatSuccessRate(month.data)),
-                Container(width: 1, height: 40, color: Colors.white24),
-                _buildStatisticItem('近90天', _formatSuccessRate(quarter.data)),
-              ],
-            ),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _buildStatisticItem('近7天执行率', _formatSuccessRate(week.data)),
+          Container(width: 1, height: 30, color: const Color(0xFFE0E0E0)),
+          _buildStatisticItem('近30天执行率', _formatSuccessRate(month.data)),
+          Container(width: 1, height: 30, color: const Color(0xFFE0E0E0)),
+          _buildStatisticItem('近90天执行率', _formatSuccessRate(quarter.data)),
+        ],
       ),
     );
   }
@@ -172,15 +152,15 @@ class _HomePageState extends State<HomePage> {
       children: [
         Text(
           title,
-          style: const TextStyle(color: Colors.white60, fontSize: 13),
+          style: const TextStyle(color: Color(0xFF666666), fontSize: 11),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 22,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Color(0xFF333333),
           ),
         ),
       ],
@@ -224,76 +204,46 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
+    const platform = MethodChannel('com.example.trade_guardian/app_launcher');
+
     if (!Platform.isAndroid) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('当前平台不支持打开东方财富')));
-
       return;
     }
 
-    // 使用 MAIN action + LAUNCHER category 打开应用（支持未运行的应用）
     try {
-      final intent = AndroidIntent(
-        action: 'android.intent.action.MAIN',
-        category: 'android.intent.category.LAUNCHER',
-        package: 'com.eastmoney.android.berlin',
-      );
-
-      await intent.launch();
-    } catch (_) {
-      debugPrint('使用 MAIN/LAUNCHER 打开东方财富失败，尝试 action_view');
-
-      // 降级方案：使用 action_view（应用已在后台时有效）
-      try {
-        final fallbackIntent = AndroidIntent(
-          action: 'action_view',
-          package: 'com.eastmoney.android.berlin',
-        );
-        await fallbackIntent.launch();
-      } catch (e2) {
-        debugPrint('打开东方财富失败: $e2');
-
+      final result = await platform.invokeMethod<bool>('launchApp', {
+        'package': 'com.eastmoney.android.berlin',
+      });
+      if (result != true) {
         if (!mounted) return;
-
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('无法打开东方财富: $e2')));
+        ).showSnackBar(const SnackBar(content: Text('无法打开东方财富，请检查是否已安装')));
       }
+    } catch (e) {
+      debugPrint('打开东方财富失败: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('无法打开东方财富: $e')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F4F8),
+      backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
         title: const Text(
           'TradeGuardian',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
+        backgroundColor: const Color(0xFF667eea),
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const DataManagePage()),
-              );
-            },
-          ),
-        ],
       ),
       body: FutureBuilder<List<TradePlan>>(
         future: _plansFuture,
@@ -312,46 +262,42 @@ class _HomePageState extends State<HomePage> {
               )
               .toList();
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(12.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 顶部渐变横幅
+                // 顶部横幅（与管理交易计划按钮同色）
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 28,
-                    horizontal: 24,
+                    vertical: 18,
+                    horizontal: 20,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF43e97b), Color(0xFF38f9d7)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    color: const Color(0xFF667eea),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF43e97b).withAlpha(100),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
+                        color: const Color(0xFF667eea).withAlpha(80),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: Colors.white.withAlpha(40),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
                           Icons.shield,
-                          size: 40,
+                          size: 32,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 14),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,17 +305,17 @@ class _HomePageState extends State<HomePage> {
                             Text(
                               '交易守护天使',
                               style: TextStyle(
-                                fontSize: 24,
+                                fontSize: 22,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            SizedBox(height: 2),
                             Text(
                               '守护交易 · 杜绝冲动交易',
                               style: TextStyle(
                                 color: Colors.white70,
-                                fontSize: 14,
+                                fontSize: 13,
                               ),
                             ),
                           ],
@@ -379,18 +325,18 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
 
-                // 状态统计卡片
+                // 状态统计卡片（执行中/生效中/待生效）
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withAlpha(15),
-                        blurRadius: 10,
+                        color: Colors.black.withAlpha(8),
+                        blurRadius: 6,
                         offset: const Offset(0, 2),
                       ),
                     ],
@@ -408,11 +354,9 @@ class _HomePageState extends State<HomePage> {
                               .length
                               .toString(),
                           TradePlanStatus.executing,
-                          const Color(0xFFFF6B6B),
-                          Icons.play_circle_filled,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: _buildClickableCountItem(
                           "生效中",
@@ -423,11 +367,9 @@ class _HomePageState extends State<HomePage> {
                               .length
                               .toString(),
                           TradePlanStatus.effective,
-                          const Color(0xFF4ECDC4),
-                          Icons.check_circle,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: _buildClickableCountItem(
                           "待生效",
@@ -440,17 +382,15 @@ class _HomePageState extends State<HomePage> {
                               .length
                               .toString(),
                           TradePlanStatus.pendingeffective,
-                          const Color(0xFFFFA94D),
-                          Icons.schedule,
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
-                // 执行成功率卡片
+                // 执行统计卡片（近7/30/90天执行率 - 与状态卡片同底色）
                 FutureBuilder(
                   future: _weekStatistic,
                   builder: (context, weekSnapshot) {
@@ -472,7 +412,7 @@ class _HomePageState extends State<HomePage> {
                   },
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
 
                 // 管理交易计划按钮
                 SizedBox(
@@ -480,24 +420,24 @@ class _HomePageState extends State<HomePage> {
                   child: ElevatedButton(
                     onPressed: _openAllPlanManage,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       backgroundColor: const Color(0xFF667eea),
                       foregroundColor: Colors.white,
-                      elevation: 3,
-                      shadowColor: const Color(0xFF667eea).withAlpha(120),
+                      elevation: 2,
+                      shadowColor: const Color(0xFF667eea).withAlpha(100),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.assignment, size: 20),
-                        SizedBox(width: 8),
+                        Icon(Icons.assignment, size: 18),
+                        SizedBox(width: 6),
                         Text(
                           "管理交易计划",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -506,7 +446,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
                 // 管理交易原则按钮
                 SizedBox(
@@ -521,25 +461,25 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      foregroundColor: const Color(0xFF764ba2),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      foregroundColor: const Color(0xFF667eea),
                       side: const BorderSide(
-                        color: Color(0xFF764ba2),
+                        color: Color(0xFF667eea),
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.rule, size: 20),
-                        SizedBox(width: 8),
+                        Icon(Icons.rule, size: 18),
+                        SizedBox(width: 6),
                         Text(
                           "管理交易原则",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -548,35 +488,71 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
-                // 东方财富按钮
+                // 登陆交易软件按钮
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: const Color(0xFFE74C3C),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      backgroundColor: const Color(0xFF667eea),
                       foregroundColor: Colors.white,
-                      elevation: 3,
-                      shadowColor: const Color(0xFFE74C3C).withAlpha(120),
+                      elevation: 2,
+                      shadowColor: const Color(0xFF667eea).withAlpha(100),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     onPressed: _openEastMoneyApp,
-                    icon: const Icon(Icons.trending_up),
+                    icon: const Icon(Icons.trending_up, size: 18),
                     label: const Text(
-                      "东方财富",
+                      "登陆交易软件",
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
+
+                // 管理后台数据按钮
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const DataManagePage(),
+                        ),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      foregroundColor: const Color(0xFF667eea),
+                      side: const BorderSide(
+                        color: Color(0xFF667eea),
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.storage, size: 18),
+                    label: const Text(
+                      "管理后台数据",
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
               ],
             ),
           );

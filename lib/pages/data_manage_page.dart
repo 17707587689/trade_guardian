@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../repositories/trade_plan_repository.dart';
 import '../repositories/trading_rule_repository.dart';
@@ -49,52 +52,24 @@ class _DataManagePageState extends State<DataManagePage> {
   Future<void> _importData() async {
     setState(() => _isImporting = true);
     try {
-      final controller = TextEditingController();
-      final jsonString = await showDialog<String>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('导入备份'),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '请打开备份 JSON 文件，复制全部内容粘贴到下方：',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: controller,
-                    maxLines: 10,
-                    decoration: const InputDecoration(
-                      hintText: '粘贴 JSON 内容...',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.all(12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('取消'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(controller.text),
-                child: const Text('导入'),
-              ),
-            ],
-          );
-        },
+      // 选择 JSON 文件
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
       );
 
-      if (jsonString == null || jsonString.trim().isEmpty) {
+      if (result == null || result.files.isEmpty) {
         return;
       }
+
+      final filePath = result.files.first.path;
+      if (filePath == null) {
+        return;
+      }
+
+      // 读取文件内容
+      final file = File(filePath);
+      final jsonString = await file.readAsString();
 
       final importService = DataImportService();
       final importResult = await importService.importFromJson(jsonString);

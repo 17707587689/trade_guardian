@@ -110,54 +110,59 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
   }
 
   Widget _buildStatusFilter() {
-    return DropdownButtonFormField<TradePlanStatus?>(
-      initialValue: _statusFilter,
-
-      decoration: const InputDecoration(
-        labelText: "状态",
-
-        border: OutlineInputBorder(),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF667eea).withAlpha(60)),
+        color: Colors.white,
       ),
-
-      items: [
-        const DropdownMenuItem(value: null, child: Text("全部状态")),
-
-        ...TradePlanStatus.values.map(
-          (e) => DropdownMenuItem(value: e, child: Text(_statusLabel(e))),
+      child: DropdownButtonFormField<TradePlanStatus?>(
+        initialValue: _statusFilter,
+        decoration: const InputDecoration(
+          labelText: "状态",
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         ),
-      ],
-
-      onChanged: (value) {
-        setState(() {
-          _statusFilter = value;
-        });
-      },
+        items: [
+          const DropdownMenuItem(value: null, child: Text("全部状态")),
+          ...TradePlanStatus.values.map(
+            (e) => DropdownMenuItem(value: e, child: Text(_statusLabel(e))),
+          ),
+        ],
+        onChanged: (value) {
+          setState(() {
+            _statusFilter = value;
+          });
+        },
+      ),
     );
   }
 
   Widget _buildDateFilter() {
-    return DropdownButtonFormField<int>(
-      initialValue: _daysFilter,
-
-      decoration: const InputDecoration(
-        labelText: "时间",
-
-        border: OutlineInputBorder(),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF667eea).withAlpha(60)),
+        color: Colors.white,
       ),
-
-      items: const [
-        DropdownMenuItem(value: 0, child: Text("全部时间")),
-
-        DropdownMenuItem(value: 7, child: Text("最近7天")),
-
-        DropdownMenuItem(value: 30, child: Text("最近30天")),
-      ],
-
-      onChanged: (value) {
-        setState(() {
-          _daysFilter = value ?? 0;
-        });
-      },
+      child: DropdownButtonFormField<int>(
+        initialValue: _daysFilter,
+        decoration: const InputDecoration(
+          labelText: "时间",
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
+        items: const [
+          DropdownMenuItem(value: 0, child: Text("全部时间")),
+          DropdownMenuItem(value: 7, child: Text("最近7天")),
+          DropdownMenuItem(value: 30, child: Text("最近30天")),
+        ],
+        onChanged: (value) {
+          setState(() {
+            _daysFilter = value ?? 0;
+          });
+        },
+      ),
     );
   }
 

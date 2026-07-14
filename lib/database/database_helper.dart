@@ -27,7 +27,7 @@ class DatabaseHelper {
       path,
 
       // 当前数据库版本
-      version: 9,
+      version: 12,
 
       onCreate: _createDB,
 
@@ -99,7 +99,14 @@ class DatabaseHelper {
         executed_return_rate REAL,
 
 
-        created_at TEXT NOT NULL
+        created_at TEXT NOT NULL,
+
+        max_buy_quantity REAL,
+        max_buy_amount REAL,
+        buy_quantity REAL,
+        buy_total_amount REAL,
+        sell_total_amount REAL,
+        did_t INTEGER DEFAULT 0
 
       )
 
@@ -142,6 +149,58 @@ class DatabaseHelper {
       await db.execute('''
 ALTER TABLE trade_plans ADD COLUMN planned_date TEXT;
 ''');
+    }
+    // v10 增加最大买入金额字段
+    if (oldVersion < 10) {
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN max_buy_amount REAL;
+''');
+    }
+    // v11 增加执行信息字段
+    if (oldVersion < 11) {
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN max_buy_quantity REAL;
+''');
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN buy_quantity REAL;
+''');
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN buy_total_amount REAL;
+''');
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN sell_total_amount REAL;
+''');
+      await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN did_t INTEGER;
+''');
+    }
+    // v12 修复已有v11数据库缺少字段的问题
+    if (oldVersion < 12) {
+      try {
+        await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN max_buy_quantity REAL;
+''');
+      } catch (_) {}
+      try {
+        await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN buy_quantity REAL;
+''');
+      } catch (_) {}
+      try {
+        await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN buy_total_amount REAL;
+''');
+      } catch (_) {}
+      try {
+        await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN sell_total_amount REAL;
+''');
+      } catch (_) {}
+      try {
+        await db.execute('''
+ALTER TABLE trade_plans ADD COLUMN did_t INTEGER DEFAULT 0;
+''');
+      } catch (_) {}
     }
   }
 
