@@ -91,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                   : status == TradePlanStatus.effective
                   ? Icons.check_circle
                   : Icons.schedule,
-              color: const Color(0xFF667eea),
+              color: const Color(0xFF7C8DB5),
               size: 20,
             ),
             const SizedBox(height: 2),
@@ -120,10 +120,10 @@ class _HomePageState extends State<HomePage> {
     AsyncSnapshot<ExecutionStatistic> quarter,
   ) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
         boxShadow: [
           BoxShadow(
@@ -138,9 +138,9 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _buildStatisticItem('近7天执行率', _formatSuccessRate(week.data)),
-          Container(width: 1, height: 30, color: const Color(0xFFE0E0E0)),
+          Container(width: 1, height: 40, color: const Color(0xFFE0E0E0)),
           _buildStatisticItem('近30天执行率', _formatSuccessRate(month.data)),
-          Container(width: 1, height: 30, color: const Color(0xFFE0E0E0)),
+          Container(width: 1, height: 40, color: const Color(0xFFE0E0E0)),
           _buildStatisticItem('近90天执行率', _formatSuccessRate(quarter.data)),
         ],
       ),
@@ -152,13 +152,13 @@ class _HomePageState extends State<HomePage> {
       children: [
         Text(
           title,
-          style: const TextStyle(color: Color(0xFF666666), fontSize: 11),
+          style: const TextStyle(color: Color(0xFF666666), fontSize: 13),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 20,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: Color(0xFF333333),
           ),
@@ -242,8 +242,9 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFF667eea),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: const Color(0xFF333333),
       ),
       body: FutureBuilder<List<TradePlan>>(
         future: _plansFuture,
@@ -266,18 +267,18 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 顶部横幅（与管理交易计划按钮同色）
+                // 顶部横幅
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                    horizontal: 20,
+                    vertical: 26,
+                    horizontal: 24,
                   ),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    color: const Color(0xFF667eea),
+                    borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFF7C8DB5),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF667eea).withAlpha(80),
+                        color: const Color(0xFF7C8DB5).withAlpha(80),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -286,18 +287,18 @@ class _HomePageState extends State<HomePage> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: Colors.white.withAlpha(40),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(
                           Icons.shield,
-                          size: 32,
+                          size: 42,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 16),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,17 +306,17 @@ class _HomePageState extends State<HomePage> {
                             Text(
                               '交易守护天使',
                               style: TextStyle(
-                                fontSize: 22,
+                                fontSize: 26,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
                             ),
-                            SizedBox(height: 2),
+                            SizedBox(height: 4),
                             Text(
                               '守护交易 · 杜绝冲动交易',
                               style: TextStyle(
                                 color: Colors.white70,
-                                fontSize: 13,
+                                fontSize: 14,
                               ),
                             ),
                           ],
@@ -325,14 +326,14 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
 
-                // 状态统计卡片（执行中/生效中/待生效）
+                // 状态统计卡片
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withAlpha(8),
@@ -388,9 +389,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
 
-                // 执行统计卡片（近7/30/90天执行率 - 与状态卡片同底色）
+                // 执行统计卡片
                 FutureBuilder(
                   future: _weekStatistic,
                   builder: (context, weekSnapshot) {
@@ -414,17 +415,17 @@ class _HomePageState extends State<HomePage> {
 
                 const SizedBox(height: 14),
 
-                // 管理交易计划按钮
+                // 管理交易计划按钮（缩小版）
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _openAllPlanManage,
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: const Color(0xFF667eea),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: const Color(0xFF7C8DB5),
                       foregroundColor: Colors.white,
                       elevation: 2,
-                      shadowColor: const Color(0xFF667eea).withAlpha(100),
+                      shadowColor: const Color(0xFF7C8DB5).withAlpha(100),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -437,7 +438,7 @@ class _HomePageState extends State<HomePage> {
                         Text(
                           "管理交易计划",
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -446,9 +447,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
 
-                // 管理交易原则按钮
+                // 管理交易原则按钮（缩小版）
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
@@ -461,10 +462,10 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      foregroundColor: const Color(0xFF667eea),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      foregroundColor: const Color(0xFF7C8DB5),
                       side: const BorderSide(
-                        color: Color(0xFF667eea),
+                        color: Color(0xFF7C8DB5),
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
@@ -479,7 +480,7 @@ class _HomePageState extends State<HomePage> {
                         Text(
                           "管理交易原则",
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -488,18 +489,18 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
 
-                // 登陆交易软件按钮
+                // 登陆交易软件按钮（缩小版）
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: const Color(0xFF667eea),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      backgroundColor: const Color(0xFF7C8DB5),
                       foregroundColor: Colors.white,
                       elevation: 2,
-                      shadowColor: const Color(0xFF667eea).withAlpha(100),
+                      shadowColor: const Color(0xFF7C8DB5).withAlpha(100),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -509,16 +510,16 @@ class _HomePageState extends State<HomePage> {
                     label: const Text(
                       "登陆交易软件",
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
 
-                // 管理后台数据按钮
+                // 管理后台数据按钮（缩小版）
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
@@ -531,10 +532,10 @@ class _HomePageState extends State<HomePage> {
                       );
                     },
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      foregroundColor: const Color(0xFF667eea),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      foregroundColor: const Color(0xFF7C8DB5),
                       side: const BorderSide(
-                        color: Color(0xFF667eea),
+                        color: Color(0xFF7C8DB5),
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
@@ -545,7 +546,7 @@ class _HomePageState extends State<HomePage> {
                     label: const Text(
                       "管理后台数据",
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

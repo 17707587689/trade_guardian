@@ -35,9 +35,17 @@ class _DataManagePageState extends State<DataManagePage> {
         ),
       );
 
-      await DataExportService.shareExportFile(
+      final filePath = await DataExportService.saveExportFile(
         tradePlans: plans,
         tradingRules: rules,
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('数据已保存到: $filePath'),
+          duration: const Duration(seconds: 3),
+        ),
       );
     } catch (e) {
       if (!mounted) return;

@@ -2,13 +2,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../models/trade_plan.dart';
 import '../models/trading_rule.dart';
 
 class DataExportService {
-  /// 导出数据为 JSON 字符串
   static Map<String, dynamic> buildExportData({
     required List<TradePlan> tradePlans,
     required List<TradingRule> tradingRules,
@@ -23,8 +21,8 @@ class DataExportService {
     };
   }
 
-  /// 保存 JSON 到文件并通过系统分享发送
-  static Future<void> shareExportFile({
+  /// 保存 JSON 文件到 Download 目录
+  static Future<String> saveExportFile({
     required List<TradePlan> tradePlans,
     required List<TradingRule> tradingRules,
   }) async {
@@ -34,17 +32,28 @@ class DataExportService {
     );
     final jsonString = const JsonEncoder.withIndent('  ').convert(data);
 
-    final dir = await getTemporaryDirectory();
     final timestamp = DateTime.now()
         .toIso8601String()
         .replaceAll(':', '-')
         .split('.')
         .first;
-    final file = File('${dir.path}/trade_guardian_backup_$timestamp.json');
+    final fileName = 'trade_guardian_backup_$timestamp.json';
+
+    // Android: 保存到公共 Download 目录
+    try {
+      final dir = Directory('/storage/emulated/0/Download');
+      if (await dir.exists()) {
+        final file = File('${dir.path}/$fileName');
+        await file.writeAsString(jsonString);
+        return file.path;
+      }
+    } catch (_) {}
+
+    // 降级：保存到应用文档目录
+    final dir = await getApplicationDocumentsDirectory();
+    final file = File('${dir.path}/$fileName');
     await file.writeAsString(jsonString);
 
-    await SharePlus.instance.share(
-      ShareParams(files: [XFile(file.path)], subject: 'TradeGuardian 数据备份'),
-    );
+    return file.path;
   }
 }
