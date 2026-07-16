@@ -1,3 +1,5 @@
+import 'package:sqflite/sqflite.dart';
+
 import '../database/database_helper.dart';
 import '../models/trade_plan.dart';
 import '../models/execution_statistic.dart';
@@ -7,6 +9,10 @@ class TradePlanRepository {
     : _databaseHelper = databaseHelper ?? DatabaseHelper.instance;
 
   final DatabaseHelper _databaseHelper;
+
+  Future<Database> getDatabase() async {
+    return _databaseHelper.database;
+  }
 
   Future<List<TradePlan>> getAllPlans() async {
     final db = await _databaseHelper.database;

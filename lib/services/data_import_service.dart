@@ -16,14 +16,30 @@ class DataImportService {
   }) : _planRepo = planRepo ?? TradePlanRepository(),
        _ruleRepo = ruleRepo ?? TradingRuleRepository();
 
+  /// 清空所有数据
+  Future<void> clearAllData() async {
+    final db = await _planRepo.getDatabase();
+    await db.delete('trade_plans');
+    await db.delete('trading_rules');
+  }
+
   /// 从 JSON 字符串解析并导入数据
+  /// [overwrite] 为 true 时先清空原有数据再导入
   /// 返回导入统计信息
-  Future<ImportResult> importFromJson(String jsonString) async {
+  Future<ImportResult> importFromJson(
+    String jsonString, {
+    bool overwrite = false,
+  }) async {
     final data = json.decode(jsonString) as Map<String, dynamic>;
 
     // 校验格式
     if (data['version'] == null || data['data'] == null) {
       throw FormatException('无效的备份文件格式');
+    }
+
+    // 覆盖模式：先清空数据
+    if (overwrite) {
+      await clearAllData();
     }
 
     final dataMap = data['data'] as Map<String, dynamic>;
@@ -72,9 +88,12 @@ class DataImportService {
   }
 
   /// 从文件导入
-  Future<ImportResult> importFromFile(File file) async {
+  Future<ImportResult> importFromFile(
+    File file, {
+    bool overwrite = false,
+  }) async {
     final jsonString = await file.readAsString();
-    return importFromJson(jsonString);
+    return importFromJson(jsonString, overwrite: overwrite);
   }
 }
 

@@ -20,6 +20,29 @@ class _DataManagePageState extends State<DataManagePage> {
   bool _isImporting = false;
 
   Future<void> _exportData() async {
+    // 选择导出格式
+    final format = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('选择导出格式'),
+          content: const Text('请选择要导出的文件格式：'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop('json'),
+              child: const Text('JSON'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop('csv'),
+              child: const Text('CSV'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (format == null || !mounted) return;
+
     setState(() => _isExporting = true);
     try {
       final planRepo = TradePlanRepository();
@@ -35,10 +58,18 @@ class _DataManagePageState extends State<DataManagePage> {
         ),
       );
 
-      final filePath = await DataExportService.saveExportFile(
-        tradePlans: plans,
-        tradingRules: rules,
-      );
+      String filePath;
+      if (format == 'csv') {
+        filePath = await DataExportService.saveCsvFile(
+          tradePlans: plans,
+          tradingRules: rules,
+        );
+      } else {
+        filePath = await DataExportService.saveExportFile(
+          tradePlans: plans,
+          tradingRules: rules,
+        );
+      }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -79,8 +110,40 @@ class _DataManagePageState extends State<DataManagePage> {
       final file = File(filePath);
       final jsonString = await file.readAsString();
 
+      // 询问是否覆盖现有数据
+      final overwrite = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('导入选项'),
+            content: const Text(
+              '是否覆盖现有数据？\n\n选择"覆盖"将先清空所有现有数据再导入。\n选择"追加"则保留现有数据，仅添加新的数据。',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('追加（保留现有数据）'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('覆盖'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!mounted || overwrite == null) return;
+
       final importService = DataImportService();
-      final importResult = await importService.importFromJson(jsonString);
+      final importResult = await importService.importFromJson(
+        jsonString,
+        overwrite: overwrite,
+      );
 
       if (!mounted) return;
 

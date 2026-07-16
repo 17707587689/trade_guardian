@@ -44,13 +44,17 @@ class _TradeRuleConfirmDialogState extends State<TradeRuleConfirmDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
       title: const Text("交易原则确认"),
 
       content: SizedBox(
-        width: double.maxFinite,
+        width: screenWidth - 32,
 
-        height: 450,
+        height: screenHeight * 0.6,
 
         child: FutureBuilder<List<TradingRule>>(
           future: _rulesFuture,

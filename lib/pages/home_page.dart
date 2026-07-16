@@ -114,6 +114,22 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<void> _openPlanManageWithFilter(int days) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => TradePlanManagePage(
+          initialDaysFilter: days,
+          initialStatus: TradePlanStatus.completed,
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+
+    _loadPlans();
+    _loadStatistics();
+  }
+
   Widget _buildExecutionCard(
     AsyncSnapshot<ExecutionStatistic> week,
     AsyncSnapshot<ExecutionStatistic> month,
@@ -134,36 +150,63 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildStatisticItem('近7天执行率', _formatSuccessRate(week.data)),
+          Expanded(
+            child: _buildStatisticItem(
+              '近7天执行率',
+              _formatSuccessRate(week.data),
+              7,
+            ),
+          ),
           Container(width: 1, height: 40, color: const Color(0xFFE0E0E0)),
-          _buildStatisticItem('近30天执行率', _formatSuccessRate(month.data)),
+          Expanded(
+            child: _buildStatisticItem(
+              '近30天执行率',
+              _formatSuccessRate(month.data),
+              30,
+            ),
+          ),
           Container(width: 1, height: 40, color: const Color(0xFFE0E0E0)),
-          _buildStatisticItem('近90天执行率', _formatSuccessRate(quarter.data)),
+          Expanded(
+            child: _buildStatisticItem(
+              '近90天执行率',
+              _formatSuccessRate(quarter.data),
+              90,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatisticItem(String title, String value) {
-    return Column(
-      children: [
-        Text(
-          title,
-          style: const TextStyle(color: Color(0xFF666666), fontSize: 13),
+  Widget _buildStatisticItem(String title, String value, int days) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => _openPlanManageWithFilter(days),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF666666), fontSize: 13),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF333333),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF333333),
-          ),
-        ),
-      ],
+      ),
     );
   }
 

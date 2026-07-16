@@ -24,15 +24,11 @@ class TradePlan {
 
   final String reason;
 
-  /// 买入条件
-  final String? buyCondition1;
-  final String? buyCondition2;
-  final String? buyCondition3;
+  /// 买入条件（可选，支持多行文本）
+  final String? buyCondition;
 
-  /// 卖出条件
-  final String? sellCondition1;
-  final String? sellCondition2;
-  final String? sellCondition3;
+  /// 卖出条件（可选，支持多行文本）
+  final String? sellCondition;
 
   /// 最大买入数量（手）
   final double? maxBuyQuantity;
@@ -85,13 +81,9 @@ class TradePlan {
 
     required this.reason,
 
-    this.buyCondition1,
-    this.buyCondition2,
-    this.buyCondition3,
+    this.buyCondition,
 
-    this.sellCondition1,
-    this.sellCondition2,
-    this.sellCondition3,
+    this.sellCondition,
 
     this.maxBuyQuantity,
     this.maxBuyAmount,
@@ -135,13 +127,8 @@ class TradePlan {
       'position_ratio': positionRatio,
 
       'reason': reason,
-      'buy_condition_1': buyCondition1,
-      'buy_condition_2': buyCondition2,
-      'buy_condition_3': buyCondition3,
-
-      'sell_condition_1': sellCondition1,
-      'sell_condition_2': sellCondition2,
-      'sell_condition_3': sellCondition3,
+      'buy_condition': buyCondition,
+      'sell_condition': sellCondition,
 
       'max_buy_quantity': maxBuyQuantity,
       'max_buy_amount': maxBuyAmount,
@@ -185,13 +172,8 @@ class TradePlan {
       positionRatio: map['position_ratio'],
 
       reason: map['reason'],
-      buyCondition1: map['buy_condition_1'],
-      buyCondition2: map['buy_condition_2'],
-      buyCondition3: map['buy_condition_3'],
-
-      sellCondition1: map['sell_condition_1'],
-      sellCondition2: map['sell_condition_2'],
-      sellCondition3: map['sell_condition_3'],
+      buyCondition: map['buy_condition'],
+      sellCondition: map['sell_condition'],
 
       maxBuyQuantity: map['max_buy_quantity'] != null
           ? (map['max_buy_quantity'] as num).toDouble()
@@ -257,13 +239,8 @@ class TradePlan {
     double? targetPrice,
     double? positionRatio,
     String? reason,
-    String? buyCondition1,
-    String? buyCondition2,
-    String? buyCondition3,
-
-    String? sellCondition1,
-    String? sellCondition2,
-    String? sellCondition3,
+    String? buyCondition,
+    String? sellCondition,
 
     double? maxBuyQuantity,
     double? maxBuyAmount,
@@ -295,13 +272,8 @@ class TradePlan {
       targetPrice: targetPrice ?? this.targetPrice,
       positionRatio: positionRatio ?? this.positionRatio,
       reason: reason ?? this.reason,
-      buyCondition1: buyCondition1 ?? this.buyCondition1,
-      buyCondition2: buyCondition2 ?? this.buyCondition2,
-      buyCondition3: buyCondition3 ?? this.buyCondition3,
-
-      sellCondition1: sellCondition1 ?? this.sellCondition1,
-      sellCondition2: sellCondition2 ?? this.sellCondition2,
-      sellCondition3: sellCondition3 ?? this.sellCondition3,
+      buyCondition: buyCondition ?? this.buyCondition,
+      sellCondition: sellCondition ?? this.sellCondition,
 
       maxBuyQuantity: maxBuyQuantity ?? this.maxBuyQuantity,
       maxBuyAmount: maxBuyAmount ?? this.maxBuyAmount,

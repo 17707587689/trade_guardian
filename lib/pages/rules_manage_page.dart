@@ -34,18 +34,27 @@ class _RulesManagePageState extends State<RulesManagePage> {
     final controller = TextEditingController(text: rule?.content ?? '');
     final isNew = rule == null;
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
+        insetPadding: EdgeInsets.zero,
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
         title: Text(isNew ? '新增原则' : '修改原则'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: '原则内容',
-            border: OutlineInputBorder(),
+        content: SizedBox(
+          width: screenWidth,
+          height: screenHeight * 0.5,
+          child: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              labelText: '原则内容',
+              border: OutlineInputBorder(),
+            ),
+            minLines: 3,
+            maxLines: null,
+            autofocus: true,
           ),
-          maxLines: 3,
-          autofocus: true,
         ),
         actions: [
           TextButton(
