@@ -399,10 +399,14 @@ class _TradePlanPageState extends State<TradePlanPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(isEdit ? '编辑交易计划' : '新建交易计划'),
+        foregroundColor: const Color(0xFF2B3447),
         actions: [
           TextButton(
             onPressed: _save,
-            child: const Text('保存', style: TextStyle(color: Colors.white)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF2B3447),
+            ),
+            child: const Text('保存'),
           ),
         ],
       ),

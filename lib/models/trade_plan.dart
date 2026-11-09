@@ -8,6 +8,8 @@ enum TradePlanStatus {
 }
 
 class TradePlan {
+  static const Object _idSentinel = Object();
+
   final int? id;
 
   final String stockCode;
@@ -111,25 +113,16 @@ class TradePlan {
   });
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-
+    final map = <String, dynamic>{
       'stock_code': stockCode,
-
       'stock_name': stockName,
-
       'buy_price': buyPrice,
-
       'stop_loss_price': stopLossPrice,
-
       'target_price': targetPrice,
-
       'position_ratio': positionRatio,
-
       'reason': reason,
       'buy_condition': buyCondition,
       'sell_condition': sellCondition,
-
       'max_buy_quantity': maxBuyQuantity,
       'max_buy_amount': maxBuyAmount,
       'buy_quantity': buyQuantity,
@@ -137,12 +130,9 @@ class TradePlan {
       'sell_total_amount': sellTotalAmount,
       'did_t': didT == true ? 1 : 0,
       'allow_t': allowT == true ? 1 : 0,
-
       'planned_date': plannedDate?.toIso8601String(),
-
       'execution_note': executionNote,
       'status': status.name,
-
       'executed_at': executedAt?.toIso8601String(),
       'executed_buy_price': executedBuyPrice,
       'executed_sell_price': executedSellPrice,
@@ -150,9 +140,14 @@ class TradePlan {
       'executed_position_ratio': executedPositionRatio,
       'executed_matched': executedMatched == true ? 1 : 0,
       'executed_return_rate': executedReturnRate,
-
       'created_at': createdAt.toIso8601String(),
     };
+
+    if (id != null) {
+      map['id'] = id;
+    }
+
+    return map;
   }
 
   factory TradePlan.fromMap(Map<String, dynamic> map) {
@@ -231,7 +226,7 @@ class TradePlan {
   }
 
   TradePlan copyWith({
-    int? id,
+    Object? id = _idSentinel,
     String? stockCode,
     String? stockName,
     double? buyPrice,
@@ -264,7 +259,7 @@ class TradePlan {
     double? executedReturnRate,
   }) {
     return TradePlan(
-      id: id ?? this.id,
+      id: id == _idSentinel ? this.id : id as int?,
       stockCode: stockCode ?? this.stockCode,
       stockName: stockName ?? this.stockName,
       buyPrice: buyPrice ?? this.buyPrice,

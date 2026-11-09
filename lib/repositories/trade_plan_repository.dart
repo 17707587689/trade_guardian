@@ -62,7 +62,6 @@ class TradePlanRepository {
     final plans = await getAllPlans();
 
     final now = DateTime.now();
-
     final start = now.subtract(duration);
 
     final completedPlans = plans.where((p) {
@@ -70,11 +69,9 @@ class TradePlanRepository {
         return false;
       }
 
-      if (p.executedSellDate == null) {
-        return false;
-      }
+      final referenceDate = p.executedSellDate ?? p.executedAt ?? p.createdAt;
 
-      return p.executedSellDate!.isAfter(start);
+      return !referenceDate.isBefore(start) && !referenceDate.isAfter(now);
     }).toList();
 
     final matched = completedPlans

@@ -291,6 +291,53 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
     );
   }
 
+  Future<void> _copyPlan(TradePlan plan) async {
+    final copied = plan.copyWith(
+      id: null,
+      stockName: '${plan.stockName}（复制）',
+      status: TradePlanStatus.draft,
+      createdAt: DateTime.now(),
+      executedAt: null,
+      executedBuyPrice: null,
+      executedSellPrice: null,
+      executedSellDate: null,
+      executedPositionRatio: null,
+      executedMatched: false,
+      executedReturnRate: null,
+      buyQuantity: null,
+      buyTotalAmount: null,
+      sellTotalAmount: null,
+      didT: null,
+      executionNote: null,
+    );
+
+    try {
+      final newId = await _repository.insertPlan(copied);
+      final newPlan = copied.copyWith(id: newId);
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已复制交易计划，正在编辑副本...')),
+      );
+
+      await Navigator.of(context).push<bool>(
+        MaterialPageRoute(builder: (_) => TradePlanPage(plan: newPlan)),
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _loadPlans();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('复制失败: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -409,6 +456,15 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.copy_all_outlined,
+                                    color: Colors.blue,
+                                    size: 20,
+                                  ),
+                                  tooltip: '复制',
+                                  onPressed: () => _copyPlan(p),
+                                ),
                                 IconButton(
                                   icon: const Icon(
                                     Icons.delete_outline,

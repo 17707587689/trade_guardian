@@ -18,4 +18,27 @@ void main() {
     expect(plan.stockName, '贵州茅台');
     expect(plan.status, TradePlanStatus.draft);
   });
+
+  test('复制交易计划时不保留旧的 id', () {
+    final original = TradePlan(
+      id: 123,
+      stockCode: '000001',
+      stockName: '平安银行',
+      buyPrice: 10,
+      stopLossPrice: 9,
+      targetPrice: 12,
+      positionRatio: 15,
+      reason: '测试复制',
+      createdAt: DateTime(2024, 1, 1),
+    );
+
+    final copied = original.copyWith(
+      id: null,
+      stockName: '${original.stockName}（复制）',
+      createdAt: DateTime(2024, 1, 2),
+    );
+
+    expect(copied.id, isNull);
+    expect(copied.toMap().containsKey('id'), isFalse);
+  });
 }
