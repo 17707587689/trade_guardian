@@ -56,5 +56,50 @@ void main() {
       final fetched3 = await repo.getPlanById(id);
       expect(fetched3, isNull);
     });
+
+    test(
+      'getExecutionStatistic counts completed plans by execution date',
+      () async {
+        final recentDate = DateTime.now().subtract(const Duration(days: 2));
+        final oldDate = DateTime.now().subtract(const Duration(days: 40));
+
+        final recentPlan = TradePlan(
+          stockCode: '000002',
+          stockName: 'RecentPlan',
+          buyPrice: 10.0,
+          stopLossPrice: 9.0,
+          targetPrice: 12.0,
+          positionRatio: 0.1,
+          reason: 'recent execution',
+          status: TradePlanStatus.completed,
+          executedAt: recentDate,
+          executedSellDate: recentDate,
+          executedMatched: true,
+          createdAt: oldDate,
+        );
+
+        final oldPlan = TradePlan(
+          stockCode: '000003',
+          stockName: 'OldPlan',
+          buyPrice: 10.0,
+          stopLossPrice: 9.0,
+          targetPrice: 12.0,
+          positionRatio: 0.1,
+          reason: 'old execution',
+          status: TradePlanStatus.completed,
+          executedAt: oldDate,
+          executedSellDate: oldDate,
+          executedMatched: false,
+          createdAt: oldDate,
+        );
+
+        await repo.insertPlan(recentPlan);
+        await repo.insertPlan(oldPlan);
+
+        final stat = await repo.getExecutionStatistic(const Duration(days: 7));
+        expect(stat.total, 1);
+        expect(stat.matched, 1);
+      },
+    );
   });
 }

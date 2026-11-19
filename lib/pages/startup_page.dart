@@ -47,14 +47,12 @@ class _StartupPageState extends State<StartupPage> {
 
     final confirmed = await showDialog<bool>(
       context: context,
-
       barrierDismissible: false,
-
       builder: (_) {
         return const TradeRuleConfirmDialog(
           showEastMoneyButton: false,
-
           cancelEnabled: false,
+          fullScreen: true,
         );
       },
     );

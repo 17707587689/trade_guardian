@@ -138,7 +138,7 @@ class _TradePlanHistoryPageState extends State<TradePlanHistoryPage> {
                     ? const Center(child: Text('暂无执行记录'))
                     : ListView.separated(
                         itemCount: plans.length,
-                        separatorBuilder: (_, __) => const Divider(),
+                        separatorBuilder: (_, _) => const Divider(),
                         itemBuilder: (context, index) {
                           final p = plans[index];
                           return ListTile(

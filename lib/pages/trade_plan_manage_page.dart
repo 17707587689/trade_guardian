@@ -97,8 +97,9 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
 
       if (_daysFilter > 0) {
         final start = now.subtract(Duration(days: _daysFilter));
+        final referenceDate = p.executedSellDate ?? p.executedAt ?? p.createdAt;
 
-        if (p.createdAt.isBefore(start)) {
+        if (referenceDate.isBefore(start) || referenceDate.isAfter(now)) {
           return false;
         }
       }
@@ -233,6 +234,14 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
     });
   }
 
+  String _formatReturnRate(double? value) {
+    if (value == null) {
+      return '-';
+    }
+
+    return TradePlan.formatPercentage(value, fractionDigits: 2);
+  }
+
   Widget _buildStatusFilter() {
     return Container(
       decoration: BoxDecoration(
@@ -292,24 +301,14 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
   }
 
   Future<void> _copyPlan(TradePlan plan) async {
-    final copied = plan.copyWith(
-      id: null,
-      stockName: '${plan.stockName}（复制）',
-      status: TradePlanStatus.draft,
-      createdAt: DateTime.now(),
-      executedAt: null,
-      executedBuyPrice: null,
-      executedSellPrice: null,
-      executedSellDate: null,
-      executedPositionRatio: null,
-      executedMatched: false,
-      executedReturnRate: null,
-      buyQuantity: null,
-      buyTotalAmount: null,
-      sellTotalAmount: null,
-      didT: null,
-      executionNote: null,
-    );
+    final copied = plan
+        .copyWith(
+          id: null,
+          stockName: '${plan.stockName}（复制）',
+          status: TradePlanStatus.draft,
+          createdAt: DateTime.now(),
+        )
+        .clearExecutionInfoIfNotCompleted();
 
     try {
       final newId = await _repository.insertPlan(copied);
@@ -317,9 +316,9 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已复制交易计划，正在编辑副本...')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('已复制交易计划，正在编辑副本...')));
 
       await Navigator.of(context).push<bool>(
         MaterialPageRoute(builder: (_) => TradePlanPage(plan: newPlan)),
@@ -448,34 +447,146 @@ class _TradePlanManagePageState extends State<TradePlanManagePage> {
                               ),
                             ),
 
-                            subtitle: Text(
-                              "制定日期：$date\n"
-                              "状态：${_statusLabel(p.status)}",
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      '制定日期：',
+                                      style: TextStyle(
+                                        color: Color(0xFF475467),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    Text(
+                                      date,
+                                      style: const TextStyle(
+                                        color: Color(0xFF1F2937),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      '状态：',
+                                      style: TextStyle(
+                                        color: Color(0xFF475467),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    Text(
+                                      _statusLabel(p.status),
+                                      style: const TextStyle(
+                                        color: Color(0xFF1F2937),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: (p.executedReturnRate ?? 0) >= 0
+                                            ? const Color(0xFFE8F8F1)
+                                            : const Color(0xFFFDECEC),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '收益率：${_formatReturnRate(p.executedReturnRate)}',
+                                        style: TextStyle(
+                                          color:
+                                              (p.executedReturnRate ?? 0) >= 0
+                                              ? const Color(0xFF0F9F6E)
+                                              : const Color(0xFFE05252),
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      '是否与计划一致：',
+                                      style: TextStyle(
+                                        color: Color(0xFF475467),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: p.executedMatched == true
+                                            ? const Color(0xFFEAF3FF)
+                                            : const Color(0xFFFDECEC),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        p.executedMatched == true ? '是' : '否',
+                                        style: TextStyle(
+                                          color: p.executedMatched == true
+                                              ? const Color(0xFF2B6CF6)
+                                              : const Color(0xFFE05252),
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
 
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.copy_all_outlined,
-                                    color: Colors.blue,
-                                    size: 20,
+                            trailing: SizedBox(
+                              width: 82,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.copy_all_outlined,
+                                      color: Color(0xFF2B6CF6),
+                                      size: 18,
+                                    ),
+                                    tooltip: '复制',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onPressed: () => _copyPlan(p),
                                   ),
-                                  tooltip: '复制',
-                                  onPressed: () => _copyPlan(p),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    color: Colors.red,
-                                    size: 20,
+                                  const SizedBox(width: 2),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.delete_outline,
+                                      color: Color(0xFFE05252),
+                                      size: 18,
+                                    ),
+                                    tooltip: '删除',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onPressed: () => _deletePlan(p),
                                   ),
-                                  tooltip: '删除',
-                                  onPressed: () => _deletePlan(p),
-                                ),
-                                const Icon(Icons.chevron_right),
-                              ],
+                                  const SizedBox(width: 1),
+                                  const Icon(
+                                    Icons.chevron_right,
+                                    size: 16,
+                                    color: Color(0xFF98A2B3),
+                                  ),
+                                ],
+                              ),
                             ),
 
                             onTap: () => _openPlan(p),
